@@ -1,4 +1,3 @@
-<h1><a id="C____0"></a>Cпортивное программирование и киберпанк</h1>
 <p><img src="https://media.giphy.com/media/NKEt9elQ5cR68/giphy.gif" alt=""></p>
 <p><em>В мире будущего многое изменилось, но алгоритмы все так же популярны</em></p>
 <p>Я довольно долго занимался спортивным программированием, и не пожалел, что потратил довольно много времени на это дело. Спортивное программирование это круто! Если вы не верите, то позвольте доказать это вам.</p>
@@ -49,40 +48,46 @@ c=h()
 <h4><a id="__89"></a>Система оценки</h4>
 <p>В каждом файле до 20 тестов. Если мы сможем найти ответ, когда в каждом тесте до сотни строк (n &lt;= 100), то мы получим 12 баллов. Если строк тысяча (n &lt;= 1000), то получим в сумме 12+15 баллов. Разделение на две группы сделано не зря. Часто бывает так, что решение придумывается недостаточно оптимальное, тогда оно получает только часть баллов. Предполагается, что 12 баллов получит решение за <a href="https://en.wikipedia.org/wiki/Big_O_notation">O(n^3)</a>, а 27 баллов дается за <a href="https://en.wikipedia.org/wiki/Big_O_notation">O(n^2)</a>. Лучше сразу написать решение быстрее.</p>
 <h4><a id="Hack_93"></a>Hack!</h4>
-<pre><code class="language-cpp"><span class="hljs-preprocessor">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;bits/stdc++.h&gt;</span></span>
-<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> <span class="hljs-built_in">std</span>;
 
-<span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-keyword">int</span> argc, <span class="hljs-keyword">char</span> *argv[])</span> </span>{
-    <span class="hljs-keyword">int</span> t;
-    <span class="hljs-built_in">cin</span> &gt;&gt; t;
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; t; i++) {
-        <span class="hljs-built_in">cout</span> &lt;&lt; <span class="hljs-string">"Case #"</span> &lt;&lt; i + <span class="hljs-number">1</span> &lt;&lt; <span class="hljs-string">": "</span>;
-        <span class="hljs-built_in">cerr</span> &lt;&lt; <span class="hljs-string">"Test #"</span> &lt;&lt; i + <span class="hljs-number">1</span> &lt;&lt; endl;
-        <span class="hljs-built_in">cout</span> &lt;&lt; (solve() ? <span class="hljs-string">"GOOD"</span> : <span class="hljs-string">"BAD"</span>) &lt;&lt; endl;
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main(int argc, char *argv[]) {
+    int t;
+    cin >> t;
+    for (int i = 0; i < t; i++) {
+        cout << "Case #" << i + 1 << ": ";
+        cerr << "Test #" << i + 1 << endl;
+        cout << (solve() ? "GOOD" : "BAD") << endl;
     }
 }
-</code></pre>
-<p><code>solve()</code> будет читать очередной тест и говорить нам ответ.</p>
-<p>Лучше сразу написать вспомогательную функцию для “разрезания” строки:</p>
-<pre><code class="language-cpp"><span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">string</span>&gt; crop(<span class="hljs-built_in">string</span>&amp; s) {
-    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">string</span>&gt; vec;
-    <span class="hljs-built_in">string</span> cur = <span class="hljs-string">""</span>;
+```
 
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; (<span class="hljs-keyword">int</span>) s.size(); i++) {
-        <span class="hljs-keyword">if</span> (s[i] &lt; <span class="hljs-string">'a'</span> || s[i] &gt; <span class="hljs-string">'z'</span>) {
-            <span class="hljs-comment">// if s[i] is not a lowercase english letter</span>
-            <span class="hljs-keyword">if</span> (!cur.empty()) {
+`solve()` будет читать очередной тест и говорить нам ответ.</p>
+<p>Лучше сразу написать вспомогательную функцию для “разрезания” строки:</p>
+
+```cpp
+vector<string> crop(string& s) {
+    vector<string> vec;
+    string cur = "";
+
+    for (int i = 0; i < (int) s.size(); i++) {
+        if (s[i] < 'a' || s[i] > 'z') {
+            // if s[i] is not a lowercase english letter
+            if (!cur.empty()) {
                 vec.push_back(cur);
-                cur = <span class="hljs-string">""</span>;
+                cur = "";
             }
-        } <span class="hljs-keyword">else</span> {
+        } else {
             cur.push_back(s[i]);
         }
     }
 
-    <span class="hljs-keyword">return</span> vec;
+    return vec;
 }
-</code></pre>
+```
+
 <h4><a id="__135"></a>Теория графов</h4>
 <p>Как нам вообще решать это? Тут на сцену выходит популярная и легендарная <strong>теория графов</strong>.</p>
 <p><img src="https://s-media-cache-ak0.pinimg.com/originals/37/71/58/377158fca2b73b083fd0aa4a4f703930.gif" alt=""></p>
@@ -93,79 +98,83 @@ c=h()
 <h4><a id="__149"></a>Нахождение ответа</h4>
 <p>Если у нас еще остались неопределенные переменные, но мы не можем найти никакой вершины, откуда не ведет ни одного ребра, это значит что мы имеем <strong>цикл</strong>, то есть зависимости, которых никак разрешить нельзя, потому что где-то <code>x</code> зависит от <code>y</code>, <code>y</code> зависит от <code>z</code>, <code>z</code> зависит от <code>x</code>, грубо говоря. Значит, для этого теста решения нет. Если мы все переменные определили, то решение есть.</p>
 <h4><a id="__153"></a>Дописываем код</h4>
-<pre><code class="language-cpp"><span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">solve</span><span class="hljs-params">()</span> </span>{
-    <span class="hljs-keyword">int</span> n;
-    <span class="hljs-built_in">cin</span> &gt;&gt; n;
 
-    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">string</span>&gt; sources(n);  <span class="hljs-comment">// source lines</span>
-    <span class="hljs-built_in">map</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-keyword">int</span>&gt; indexes;   <span class="hljs-comment">// map of "variable name" -&gt; "index"</span>
-    <span class="hljs-built_in">vector</span>&lt; <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">string</span>&gt; &gt; deps_raw(n);   <span class="hljs-comment">// list of dependencies (as variable string)</span>
-    <span class="hljs-built_in">vector</span>&lt; <span class="hljs-built_in">set</span>&lt;<span class="hljs-keyword">int</span>&gt; &gt; deps(n);   <span class="hljs-comment">// list of dependencies (as indexes)</span>
+```cpp
+bool solve() {
+    int n;
+    cin >> n;
 
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
-        <span class="hljs-built_in">string</span> s;
-        <span class="hljs-built_in">cin</span> &gt;&gt; s;
+    vector<string> sources(n);  // source lines
+    map<string, int> indexes;   // map of "variable name" -> "index"
+    vector< vector<string> > deps_raw(n);   // list of dependencies (as variable string)
+    vector< set<int> > deps(n);   // list of dependencies (as indexes)
+
+    for (int i = 0; i < n; i++) {
+        string s;
+        cin >> s;
 
         sources[i] = s;
 
-        <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">string</span>&gt; variables = crop(s);
-        <span class="hljs-built_in">string</span> name = variables[<span class="hljs-number">0</span>];
+        vector<string> variables = crop(s);
+        string name = variables[0];
         indexes[name] = i;
 
-        <span class="hljs-built_in">vector</span>&lt;<span class="hljs-built_in">string</span>&gt; var_names;
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> z = <span class="hljs-number">2</span>; z &lt; (<span class="hljs-keyword">int</span>) variables.size(); z++)
+        vector<string> var_names;
+        for (int z = 2; z < (int) variables.size(); z++)
             var_names.push_back(variables[z]);
         deps_raw[i] = var_names;
     }
 
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> dep : deps_raw[i]) {
-            <span class="hljs-keyword">if</span> (!indexes.count(dep))
-                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    for (int i = 0; i < n; i++) {
+        for (auto dep : deps_raw[i]) {
+            if (!indexes.count(dep))
+                return false;
         }
     }
 
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
-        <span class="hljs-built_in">set</span>&lt;<span class="hljs-keyword">int</span>&gt; deps_set;
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> dep : deps_raw[i])
+    for (int i = 0; i < n; i++) {
+        set<int> deps_set;
+        for (auto dep : deps_raw[i])
             deps_set.insert(indexes[dep]);
         deps[i] = deps_set;
     }
 
-    <span class="hljs-comment">// main loop here!</span>
-    <span class="hljs-built_in">vector</span>&lt;<span class="hljs-keyword">bool</span>&gt; used(n);
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> count = <span class="hljs-number">0</span>; count &lt; n; count++) {
-        <span class="hljs-keyword">int</span> v = -<span class="hljs-number">1</span>;
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
-            <span class="hljs-keyword">if</span> (used[i])
-                <span class="hljs-keyword">continue</span>;
-            <span class="hljs-keyword">if</span> (deps[i].empty()) {
+    // main loop here!
+    vector<bool> used(n);
+    for (int count = 0; count < n; count++) {
+        int v = -1;
+        for (int i = 0; i < n; i++) {
+            if (used[i])
+                continue;
+            if (deps[i].empty()) {
                 v = i;
-                <span class="hljs-keyword">break</span>;
+                break;
             }
         }
-        <span class="hljs-keyword">if</span> (v == -<span class="hljs-number">1</span>)
-            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        if (v == -1)
+            return false;
 
-        <span class="hljs-built_in">cerr</span> &lt;&lt; count &lt;&lt; <span class="hljs-string">"-th line: "</span> &lt;&lt; sources[v] &lt;&lt; endl;
+        cerr << count << "-th line: " << sources[v] << endl;
 
-        used[v] = <span class="hljs-literal">true</span>;
-        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
-            <span class="hljs-keyword">if</span> (!used[i]) {
-                <span class="hljs-keyword">if</span> (deps[i].count(v))
+        used[v] = true;
+        for (int i = 0; i < n; i++) {
+            if (!used[i]) {
+                if (deps[i].count(v))
                     deps[i].erase(v);
             }
         }
     }
 
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    return true;
 }
-</code></pre>
+```
+
 <p><a href="https://gist.github.com/Izaron/43c521e5597550029de928c5fb8f3ef9">Полный исходный код</a>.</p>
 <p><img src="https://media.giphy.com/media/IojlRkMFIgZVu/giphy.gif" alt="" align="right"></p>
 <p>Скомпилировать можно в вашей IDE или в консоли <code>g++ -std=c++11 main.cpp -o main</code>, смотреть работу программы <code>./main &lt;input_file &gt;output_file</code>.</p>
 <p>Выхлоп в консоли из примера на странице с задачей:</p>
-<pre><code>Test #1
+```
+Test #1
 0-th line: b=g()
 1-th line: c=h()
 2-th line: a=f(b,c)
@@ -174,7 +183,7 @@ Test #3
 Test #4
 0-th line: x=f()
 1-th line: y=g(x,x)
-</code></pre>
+```
 <p><img src="http://4.bp.blogspot.com/-3pgg2B2VrG0/U7ndQIaSTPI/AAAAAAAAAIM/jU3yDsl_wDk/s1600/title.gif" alt=""></p>
 <p>На этом все, спасибо за внимание! Но не пропадайте надолго…</p>
 <p>:wq</p>
