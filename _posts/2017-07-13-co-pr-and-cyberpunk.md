@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Competitive programming and cyberpunk
+language: ru
 ---
 
 ![](https://media.giphy.com/media/NKEt9elQ5cR68/giphy.gif)
