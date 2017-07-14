@@ -145,7 +145,7 @@ How can we even solve it? It's time for the popular and legendary **graph theory
 
 ![](https://s-media-cache-ak0.pinimg.com/originals/37/71/58/377158fca2b73b083fd0aa4a4f703930.gif)
 
-Let's represent our task as a graph! Every variable is the **vertex** now, from which in every dependent variable (his vertex) the directed **edge** is goes.
+Let's represent our task as a graph! Every variable is the **vertex** now, from which in every dependent variable (his vertex) the directed **edge** goes.
 
 #### Building a model
 
