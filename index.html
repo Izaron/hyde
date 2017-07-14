@@ -5,6 +5,7 @@ title: Home
 
 <div class="posts">
   {% for post in paginator.posts %}
+  {% if post.language contains 'en' %}
   <div class="post">
     <h1 class="post-title">
       <a href="{{ post.url }}">
@@ -14,14 +15,13 @@ title: Home
 
     <span class="post-date">{{ post.date | date_to_string }}</span>
 
-    {% if post.language contains 'en' %}
-      {{ post.content | split:'<!--break-->' | first }}
-      {% if post.content contains '<!--break-->' %}
-          <a href="{{ post.url }}">read more</a>
-      {% endif %}
+    {{ post.content | split:'<!--break-->' | first }}
+    {% if post.content contains '<!--break-->' %}
+        <a href="{{ post.url }}">read more</a>
     {% endif %}
   </div>
   {% endfor %}
+  {% endif %}
 </div>
 
 <div class="pagination">
