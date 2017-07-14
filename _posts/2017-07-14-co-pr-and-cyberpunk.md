@@ -63,7 +63,7 @@ What is a _problem_? We get a bunch of numbers and string from the input stream 
 
 #### Recommended to solve
 
-When Google Code Jam engineers was giving a talk about the CP, they considered quite good problem from one of their round - [Evaluation](https://code.google.com/codejam/contest/6274486/dashboard#s=p2).
+When Google Code Jam engineers were giving a talk about the CP, they considered quite good problem from one of their round - [Evaluation](https://code.google.com/codejam/contest/6274486/dashboard#s=p2).
 
 An unordered list of assignment statements is given, the task is to determine if it is possible to put the statements in some order in which all variables can be evaluated.
 
