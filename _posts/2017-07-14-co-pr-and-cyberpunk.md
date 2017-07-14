@@ -10,6 +10,8 @@ _In the world of the future many things have changed, but algoritms are still po
 
 I've been doing competitive programming for some years, and have never regretted about this. Competivive programming is cool! If you don't believe me, I'm going to prove it. Just let's go!
 
+<!--break-->
+
 ## Competitive programming is interesting
 
 Really, if someone does CP seriously, he learns a lot of interesting things. Data structures, graph theory, string algorithms, as well as dynamic programming, game theory, combinatorics... The list is pretty big.
