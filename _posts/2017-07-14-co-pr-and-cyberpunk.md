@@ -22,7 +22,7 @@ _And he understands, why this code is as slow as a phone with Android 2.3.2_
 
 ## Competitive programming helps understand the code more and keeps the brains turned on
 
-![](https://camo.githubusercontent.com/93f40fae2493e5b8290d76256c315adffaf8209d/68747470733a2f2f732d6d656469612d63616368652d616b302e70696e696d672e636f6d2f6f726967696e616c732f62652f38322f38632f62653832386334306262356131336432356331653235373935313465643666332e676966)
+![](https://s-media-cache-ak0.pinimg.com/originals/be/82/8c/be828c40bb5a13d25c1e2579514ed6f3.gif)
 
 _Something has gone wrong, and I can't deal with it two hours already_
 
