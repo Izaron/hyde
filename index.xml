@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>/home/izaron on izaron</title>
+    <link>/</link>
+    <description>Recent content in /home/izaron on izaron</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 14 Jul 2017 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Competitive programming and cyberpunk</title>
+      <link>/post/competitive-programming-and-cyberpunk/</link>
+      <pubDate>Fri, 14 Jul 2017 00:00:00 +0000</pubDate>
+      
+      <guid>/post/competitive-programming-and-cyberpunk/</guid>
+      <description>In the future world many things changed, but algoritms are still popular
+The theme of the post is competitive programming, cyberpunk is contained in gifs. Get over here.
+I&amp;rsquo;ve been doing competitive programming for some years, and have never regretted it. Competivive programming is pretty cool. If you don&amp;rsquo;t believe in it, I can prove it. Just let&amp;rsquo;s go!
+ Competitive programming is interesting If someone does CP seriously, he learns a lot of interesting things.</description>
+    </item>
+    
+  </channel>
+</rss>
