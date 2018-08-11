@@ -6,10 +6,20 @@
     <description>Recent content in /home/izaron on izaron</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 14 Jul 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 07 Aug 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Solving colored Japanese crosswords with the speed of light</title>
+      <link>/post/solving-colored-japanese-crosswords-with-the-speed-of-light/</link>
+      <pubDate>Tue, 07 Aug 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/post/solving-colored-japanese-crosswords-with-the-speed-of-light/</guid>
+      <description>This is the translation of my post from the finest technical news and programming site for Russian-speaking people - habr.com. The post got rating +88 and was lucky to become &amp;ldquo;the post of the day&amp;rdquo; (the post which got the biggest rating that day).
+Japanese crosswords (aka nonograms) are picture logic puzzles. The solution of puzzles based on numbers which are placed to the left of the rows and on the top of the columns.</description>
+    </item>
     
     <item>
       <title>Competitive programming and cyberpunk</title>

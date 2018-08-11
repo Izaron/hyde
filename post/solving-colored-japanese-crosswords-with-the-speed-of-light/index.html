@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Solving colored Japanese crosswords with the speed of light</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link rel="stylesheet" href="/css/theme-override.css">
+
+      <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css"
+         integrity="sha384-wITovz90syo1dJWVh32uuETPVEtGigN07tkttEqPv+uR2SE/mbQcG7ATL28aI9H0"
+         crossorigin="anonymous">
+    <header>
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/dracula.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="/">/home/izaron</a>
+      </li>
+
+
+
+      
+      
+      <li class="pull-right">
+        <a href="/index.xml">~/subscribe</a>
+      </li>
+      
+
+    </ul>
+  </nav>
+</header>
+
+  </head>
+
+  <body>
+    <br/>
+
+<div class="article-meta">
+<h1><span class="title">Solving colored Japanese crosswords with the speed of light</span></h1>
+
+<h2 class="date">2018/08/07</h2>
+<p class="terms">
+  
+  
+  
+  
+  
+</p>
+</div>
+
+
+
+<main>
+
+
+<p><em>This is the translation of my <a href="https://habr.com/post/418069/">post</a> from the finest technical news and programming site for Russian-speaking people - habr.com. The post got rating +88 and was lucky to become &ldquo;the post of the day&rdquo; (the post which got the biggest rating that day).</em></p>
+
+<p>Japanese crosswords (aka nonograms) are picture logic puzzles. The solution of puzzles based on numbers which are placed to the left of the rows and on the top of the columns.</p>
+
+<p>The size of the puzzle may be as big as 150x150. A player calculate the color of each cell with some special logical methods. The solution process can take a couple of minutes on puzzles for newcomers and dozens of hours on hard ones.</p>
+
+<p>A good algorithm is capable to solve the task too much faster. In the post I described how to write a solution which works almost instantly, using most convenient algorithms (which lead to a solution in general), and their optimizations and features of C++ (which decrease the running time in dozens of times).</p>
+
+<p><img src="https://habrastorage.org/webt/w1/tw/-c/w1tw-caq1d9vswcrqfapdufcbfk.gif" alt="" /></p>
+
+<!--break-->
+
+<h2 id="game-rules">Game rules</h2>
+
+<p>At the start the canvas of the image is filled with white. For vanilla black-white crosswords it is needed to restore the positions of black cells.</p>
+
+<p>In black-white crosswords the amount of numbers for each row (to the left of canvas) or for each column (on the top of canvas) defines how many groups of black cells (placed sequentially) are placed in the corresponding row or column, and the numbers themselves - the lengths of each group. The list of numbers $[3, 2, 5]$ means that in the corresponding line (row/column) there is three groups placed sequentially, of $3$, $2$ and $5$ black cells. Groups can be located as you wish, not breaking their relative order (since the numbers define their lengths, but the positions have to be guessed), but they should be divided by at least one white cell.</p>
+
+<p><img src="https://habrastorage.org/webt/bl/w9/zt/blw9ztswh2gvpy0lfqr76ei_xcq.png" alt="" /></p>
+
+<p><em>A correct example</em></p>
+
+<p>In colored crosswords each group has its color - any color except white, which is reserved for background. Neighboring groups of <em>different</em> colors can be placed back to back, but for the <em>same</em> color the division by at least one white cell is still necessary.</p>
+
+<h2 id="what-is-not-a-japan-crossword">What is not a japan crossword</h2>
+
+<p>Every pixel image can be encoded to a puzzle. But it may be impossible to restore the image back - the resulting puzzle may have more than one solution, either have the single solution but can&rsquo;t be solved in a logical way. Then the remaining cells are to be guessed used <s>quantum computing</s> shamanic technologies.</p>
+
+<p>Such crosswords aren&rsquo;t crosswords, but graphomania. It goes that a correct crossword - such a crossword in which using only a logical way it&rsquo;s possible to reach the single solution.</p>
+
+<p>A &ldquo;logical way&rdquo; is a possibility to restore each cell one by one, considering a row/column one by one either their intersection. If there isn&rsquo;t such an opportunity, the amount of possible variants can be huge, way too bigger than people can calculate with a pen and paper.</p>
+
+<p><img src="https://habrastorage.org/webt/qs/nu/2m/qsnu2mmr0lutke0xzprtow8jv-i.png" alt="" /></p>
+
+<p><em>A wrong nonogram - the solution is single, but impossible to be found with a deterministic algorithm. &ldquo;Unsolvable&rdquo; cells filled with orange. The source of the image is Wikipedia.</em></p>
+
+<p>This limitation is explained in such a way - in the most common case the japan crossword is an NP-complete problem. However, it isn&rsquo;t such a problem, if there is an algorithm which in every state uniquely calculates what cells are to be definitely guessed. All methods of solving crosswords, used by people (excepting <del>Monte-Carlo</del> trial and error method) are based on this.</p>
+
+<p>The most orthodox crosswords have width and height what are divisible by 5, don&rsquo;t have instantly-calculated lines (what don&rsquo;t have groups at all or whose groups fill the entire line cell by cell definitely). These requirements are not mandatory.</p>
+
+<p>The simplest wrong nonogram:</p>
+
+<pre><code class="language-Bash">  |1 1|
+--+---+
+ 1|   |
+ 1|   |
+--+---+
+</code></pre>
+
+<p>Encoded pixelart images often are not back-solvable, if they have a &ldquo;chess order&rdquo; to imitate gradient. You&rsquo;ll get what it means by searching &ldquo;pixelart gradient&rdquo;. Pixelart gradients are similar to this fail 2x2 crossword.</p>
+
+<p><img src="https://habrastorage.org/webt/oz/mm/sj/ozmmsj7dzmqdn0dwgmspwymmohy.gif" alt="" /></p>
+
+<h2 id="possible-ways-to-solve">Possible ways to solve</h2>
+
+<p>We have the dimensions of the puzzle, description of the colors and all the rows and columns. How to build the image from this:</p>
+
+<h4 id="brute-force">Brute force</h4>
+
+<p>Iterate all possible states for each cell and check the satisfability. Complexity of such a solution for black-white crosswords is $O(N<em>M</em>{2}^{N*M})$, for colored ones $O(N<em>M</em>{colors}^{N*M})$. Like <a href="https://en.wikipedia.org/wiki/Bogosort">clown sort</a>, this solution also can be named clownish. It&rsquo;s good for 5x5 dimension.</p>
+
+<h4 id="backtracking">Backtracking</h4>
+
+<p>Iterate all possible ways to place horizontal cell groups. Place a group of cells in a row, check that it didn&rsquo;t break the description of columns cell groups. If it did - try to place the same group one cell further. If we placed successfully - go to the next group. If the group can&rsquo;t be placed anyway - rool back two groups, check again, and so on, while we haven&rsquo;t placed the last group correctly.</p>
+
+<h4 id="separately-for-each-line">Separately for each line</h4>
+
+<p>This solution is way too better and is truly true. We can analyze each row and each column separately. For each line we try to reveal the maximum of information.</p>
+
+<p>The algorithm reveals information for each cell in a line - it may turn out that it&rsquo;s impossible to set a cell in a certain color, groups then won&rsquo;t describe a right configuration anymore. We can&rsquo;t reveal the whole row, but new information &ldquo;helps&rdquo; some columns reveal better, and when we analyze them, they will &ldquo;help&rdquo; rows back, and so on, during multiple iterations, while haven&rsquo;t got a single possible color for each cell.</p>
+
+<h2 id="the-truly-true-solution">The truly true solution</h2>
+
+<h4 id="one-line-two-colors">One line, two colors</h4>
+
+<p>Effective guessing of one-line crosswords, in which some cells are already guessed, is a greatly tough task. It appeared in such contests as:</p>
+
+<ul>
+<li><em>Quarter-Final of ACM ICPC 2006</em> - <a href="http://acm.timus.ru/problem.aspx?space=1&amp;num=1508&amp;locale=en">you can try to solve the task yourself</a>. Time limit - 1 second, limit of the groups number - 400, the length of the line - 400. It has a pretty strong level of difficulty compared to other tasks on the site.</li>
+<li><em>International Olympiad in Informatics 2016</em> - <a href="http://ioinformatics.org/locations/ioi16/contest/day2/paint/paint-USA.pdf">legeng</a>, <a href="https://contest.yandex.ru/contest/2647/problems/D/">send solution (warning, Russian-language server)</a>. Time limit - 2 seconds, limit of the groups number - 100, the length of the line - 200&rsquo;000. These limitations are overkill, but a solution which passes the ACM task limits, gives <sup>80</sup>&frasl;<sub>100</sub> points in this task. The level of this contest is very hard, school students with cruel IQ from around the world train to solve bizarre tasks many years, then pass the competition to take part in this contest (only 4 people should pass to the contest from each country each year), solve it 2 rounds for 5 hours <del>and in case of epic win (bronze medal for 138-240 points of 600, in different years) land on Oxford, then get offers from you-know-what companies in the search department, have a long and happy life.</del></li>
+</ul>
+
+<p>A monochrome one-liner can be solved using different ways, as with $O(N*2^N)$ (brute-forcing all states, check for correctness, detect the cells which have the same colors in all correct states), as well somehow less stupid.</p>
+
+<p>The key idea is to use an analog of backtracking with avoiding redundant calculations. If we somehow placed some groups and currently we are in some cell, then we need to know, if it&rsquo;s possible to place remaining groups starting from the current cell.</p>
+
+<p><details>
+<summary>Pseudocode</summary></p>
+
+<pre><code class="language-python">def EpicWin(group, cell):                                                          
+    if cell &gt;= last_cell: # The win condition                                       
+        return group == group_size                                              
+                                                                                
+    win = False                                                                 
+                                                                                
+    # Check if we can place the group to the position                                   
+    if group &lt; group_size  # There are some groups left                                    
+            and CanInsertBlack(cell, len[group])  # Inserting black group        
+            and CanInsertWhite(cell + len[group], 1)  # Inserting white cell    
+            and EpicWin(group + 1, cell + len[group] + 1):  # Can fill further
+        win = True                                                              
+        can_place_black[cell .. (cell + len[group] - 1)] = True                 
+        can_place_white[cell + len[group]] = True;                              
+                                                                                                           
+    # Check if we can place a white cell to the position                                
+    if CanInsertWhite(cell, 1)                                                     
+            and EpicWin(group, cell + 1):                                          
+        win = True                                                                 
+        can_place_white[cell] = True                                               
+                                                                                   
+    return win
+
+EpicWin(0, 0)        
+</code></pre>
+
+<p></details>
+Such a method called <a href="https://en.wikipedia.org/wiki/Dynamic_programming">dynamic programming</a>. Note that the pseudocode is pretty simplified and we don&rsquo;t even memoize the calculated values.</p>
+
+<p>The functions <code>CanInsertBlack/CanInsertWhite</code> are needed to check if it&rsquo;s possible to place a group of certain size and color in some position. All what they have to do is to check that in the specified segment there are no any &ldquo;100% white&rdquo; cell (for the first function) or &ldquo;100% black&rdquo; (for the second one). It means they can work with $O(1)$ complexity since it can be done via partial sums:
+<details>
+<summary>CanInsertBlack</summary></p>
+
+<pre><code class="language-python">white_counter = [ 0, 0, ..., 0 ]  # An array of length n                              
+                                                                                
+def PrecalcWhite():                                                             
+    for i in range(0, (n-1)):                                                        
+        if is_anyway_white[i]:  # 1, if the i-th cell is 100% white                
+            white_counter[i]++                                                  
+        if i &gt; 0:                                                               
+            white_counter[i] += white_counter[i - 1]                            
+                                                                                
+def CanInsertBlack(cell, len):                                                  
+    # Omitting checks of [cell, cell + len - 1] segment bounds correctness              
+    ans = white_counter[cell + len - 1]                                         
+    if cell &gt; 0:                                                                
+        ans -= white_counter[cell - 1]                                          
+    # ans contains the number of definitely white cells from \[cell\] to \[cell + len - 1\]
+    return ans == 0        
+</code></pre>
+
+<p></details>
+We do the same witchcraft for lines like</p>
+
+<pre><code class="language-python">can_place_black[cell .. (cell + len[group] - 1)] = True
+</code></pre>
+
+<p>Which imply changing a segment of an array. There we can increment (increase by 1) the element instead of <code>= True</code>. If we need to do a lot of summations on segments in an array, and we do not use the array somehow before different summations (it is said that the task &ldquo;is solved offline&rdquo;), then instead of the cycle:</p>
+
+<pre><code class="language-python"># This is called many times
+for i in range(L, R + 1):
+    array[i]++
+</code></pre>
+
+<p>We can do this:</p>
+
+<pre><code class="language-python"># This is called many times
+array[L]++
+array[R + 1]--
+# After all summations
+for i in range(1, n):
+    array[i] += array[i - 1]
+</code></pre>
+
+<p>Thereby the algorithm works for $O(k*n)$ complexity, where $k$ is the number of black cell groups, $n$ is the length of the line. And we pass to the Semi-Final of ACM ICPC or get a bronze medal of IOI. <a href="https://github.com/Izaron/ACM-ICPC/blob/master/Timus%20Online%20Judge/Volume%206/1508.%20Japanese%20Puzzle.java">ACM solution (Java)</a>. <a href="https://github.com/Izaron/ACM-ICPC/blob/master/International%20Olympiad%20in%20Informatics/IOI%202016/paint.cpp">IOI solution (C++)</a>.</p>
+
+<h4 id="one-line-many-colors">One line, many colors</h4>
+
+<p>When looking at many-colored nonograms, for which we even still don&rsquo;t know the solution, we learn a terrible truth - in fact, each row is affected by every column! It goes clear with an example:</p>
+
+<p><img src="https://habrastorage.org/webt/6m/ve/_d/6mve_d8spu5wyqai1osmtppdgr8.png" alt="" /></p>
+
+<p><em>Source - <a href="http://www.nonograms.org/methods">Methods of solving Japanese crosswords</a></em></p>
+
+<p>Bicolored nonograms go well without this effect, they don&rsquo;t need to look at orthogonal friends. The left example from the image has three empty cells at the right end, because the configuration breaks when we fill these cells with not white color.</p>
+
+<p>But this connection can be resolved, if we give a number to each cell, where $i$-th bit means if it&rsquo;s allowed to give the cell the $i$-th color. At the start each cell has the number $2^{colors} - 1$. The dynamic programming solution won&rsquo;t change dramatically.</p>
+
+<p>We can take notice on an effect: in the same left example, according to the rows, the most right cell can have either blue or white color.
+According to the columns, this cell has either green, or white color.
+According to common sense, this cell definitely has only white color. And we continue to calculate the answer.</p>
+
+<p>If consider the 0-th bit &ldquo;white&rdquo;, the first &ldquo;blue&rdquo;, the second &ldquo;green&rdquo;, then the row calculated for the last cell state $011$, the column $101$. It means that really the cell has state $011&amp;101 = 001$.</p>
+
+<p><details>
+<summary>Pseudocode</summary></p>
+
+<pre><code class="language-python">source = [...]  # States at the start of the algo
+result = [0, 0, ..., 0]  # States at the end
+len = [...]  # Lengths of cell groups
+clrs = [...]  # Colors of cell groups
+
+def CanInsertColor(color, cell, len):                                                  
+    for i in range(cell, cell + len):
+        if (source[i] &amp; (1 &lt;&lt; color)) == 0:  # Can't place this color in a certain cell
+            return False;
+    return True
+
+def PlaceColor(color, cell, len):                                                                                                                      
+    for i in range(cell, cell + len):                                           
+        result[i] |= (1 &lt;&lt; color)  # Add the color by the OR operation
+
+def EpicWinExtended(group, cell):                                               
+    if cell &gt;= last_cell: # The win condition
+        return group == group_size                                              
+                                                                                
+    win = False                                                                 
+                                                                                
+    # Can insert the group in the position                                   
+    if group &lt; group_size  # Have some groups left to be placed                                    
+            and CanInsertColor(clrs[group], cell, len[group])  # Placing black group
+            and SequenceCheck()  # If the next group has the same cell, check that
+                                 # we can place the white cell after the group
+            and EpicWin(group + 1, cell + len[group]):  # Can fill further
+        win = True                                                              
+        PlaceColor(clrs[group], cell, len[group])                               
+        PlaceColor(0, cell + len[group], 1)  # Place the white cell if needed
+                                                                                
+    # Can insert the white cell in the position                                   
+    # White color has bit index 0
+    if CanInsertWhite(0, cell, 1)                                               
+            and EpicWinExtended(group, cell + 1):                                                                                                      
+        win = True                                                              
+        PlaceColor(0, cell, 1)                                                  
+                                                                                
+    return win                      
+</code></pre>
+
+<p></details></p>
+
+<h4 id="many-lines-many-colors">Many lines, many colors</h4>
+
+<p>Permanently update the state of all rows and columns, described in the last paragraph, while we have cells with more than one bit. In each iteration, after updating all rows and columns, update the states of all cells in them via mutual AND.</p>
+
+<h2 id="first-results">First results</h2>
+
+<p>Let&rsquo;s say that we didn&rsquo;t write the code as woodpeckers, didn&rsquo;t copy objects instead of passing by reference by mistake, didn&rsquo;t mess up things in the code anywhere, weren&rsquo;t inventing bicycles, use <code>__builtin_popcount</code> and <code>__builtin_ctz</code> for bit operations (<a href="https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html">gcc properties</a>), and did things neat and clean.</p>
+
+<p>Let&rsquo;s look at the running time of the program, which reads the puzzle from a file and solves it completely. It&rsquo;s worth to look at the working station properties, on which all the code has been written and tested:
+<details>
+<summary>Specs of the engine of my 1932 Harley Davidson Model B Classic Motorcycle</summary></p>
+
+<pre><code class="language-bash">RAM - 4GB
+CPU - AMD E1-2500, capacity 1400MHz
+Cache L1 - 128KiB, 1GHz
+Cache L2 - 1MiB, 1GHz
+Cores - 2, threads - 2
+Presented as «weakly productive SoC for compact laptops» mid-2013
+Costs 28$
+</code></pre>
+
+<p></details></p>
+
+<p>It&rsquo;s clear that such a supercomputer was chosen, because optimizations have bigger effect on this, than on a flying devil-machines.</p>
+
+<p>So, after launching our algorithm on the hardest puzzle (according to nonograms.org), we get not so good outcome - from <strong>47</strong> to <strong>60</strong> seconds (including reading from the file and solving). I need to notice that complexities of puzzles from nonograms.org are calculated well - the same crossword takes the top place of working time, as well as other most hard puzzles are in the top, in all versions of the program.
+<details>
+<summary>Colored nonogram №9596, the hardest</summary></p>
+
+<p><img src="https://habrastorage.org/webt/ar/7n/rx/ar7nrxtbzch1wk8bsihz0puldt8.png" alt="" /></p>
+
+<p></details></p>
+
+<p>I added to the program an option to launch a benchmark on a folder. To get data I parsed <strong>4683</strong> colored nonograms (out of <strong>10906</strong>) and <strong>1406</strong> black-white (out of <strong>8293</strong>) from nonograms.org (this site is one of the biggest archives of nonograms) by a script and saved it in a format understandable to the program. We can consider these puzzles as random samples, therefore the benchmark shows adequate median and average values. Also the numbers of a couple of dozens of the most &ldquo;hard&rdquo; puzzles (and the biggest, and those that have the most colors) I wrote to the script by hands.</p>
+
+<p><img src="https://habrastorage.org/webt/ox/xt/nd/oxxtnd1jdlth72q0zqnj3ic1kew.png" alt="" /></p>
+
+<h2 id="optimization">Optimization</h2>
+
+<p>Here I show optimization methods, which have been applied (1)while writing the entire algorithm, (2)to pressure the running time down from half a minute to fractions of a second, (3)possible methods which may be useful in the future.</p>
+
+<h4 id="while-writing-the-algorithm">While writing the algorithm</h4>
+
+<ul>
+<li>Special functions for bit operations, in our case <code>__builtin_popcount</code> to count ones in binary presentation of a number, and <code>__builtin_ctz</code> to find the amount of trailing zeros of a number. Those functions may not exist in some compilers. For Windows you can use code like:</li>
+</ul>
+
+<p><details>
+<summary>Windows popcount</summary></p>
+
+<pre><code class="language-cpp">#ifdef _MSC_VER                                                                                                
+#  include &lt;intrin.h&gt;                                                                                          
+#  define __builtin_popcount __popcnt                                                                          
+#endif   
+</code></pre>
+
+<p></details>
+- Arrays organization - the smaller dimension stands at the beginning. For example, it&rsquo;s better to use an array which looks like [2][3][500][1024], than [1024][500][3][2].
+- The most important - adequacy of the code and avoiding to create redundant problems for CPU to calculate.</p>
+
+<h4 id="what-decreases-the-execution-time">What decreases the execution time</h4>
+
+<ul>
+<li>-O2 flag when compiling. (-O3 isn&rsquo;t always good, but it&rsquo;s not the theme of this article)</li>
+<li>To avoid &ldquo;solving&rdquo; already solved row/column again, store in a std::vector/array flags for each line, mark a linewhen solved, and don&rsquo;t allow to go further, when iterating the lines and meeting already solved one.</li>
+<li>Specificity of a multi-repetitive solution that used dynamic programming several times, assumes that the array which marks already &ldquo;calculated&rdquo; pieces of the tasks, is needed to be cleared every new iteration. In our case it is a two-dimensional array/vector, where the first dimension is the amount of the groups, the second one is the current cell (look EpicWin pseudocode above for details, where there the array doesn&rsquo;t exist, but the idea is clear). Instead of zeroing out we can do this way - let we have a variable named &ldquo;timer&rdquo;, and the array consists of numbers which show the last &ldquo;time&rdquo; when this piece was recalculated earlier. When starting a new subtask, icrement the &ldquo;timer&rdquo;. Instead of checking boolean flags it&rsquo;s needed to check the equality of the &ldquo;timer&rdquo; and elements of the array. This is especially effective when the algorithm doesn&rsquo;t look at absolutely all states (let&rsquo;s say, 50%-90% or even 5% in some cases), and that means that zeroing out the array &ldquo;did we calculated this&rdquo; takes a great amount of time).</li>
+<li>Change simple same-type operations (loops with assignments, etc.) to their analogs in STL or other more adequate things. Sometimes it works faster that an invented wheel.</li>
+<li><code>std::vector&lt;bool&gt;</code> in C++ saves all boolean values as bits in an integer type to save memory. It works slightly slower on access, comparing with a regular value by an address. If a program accesses extremely often, changing bool to an integer type can affect program&rsquo;s perfomance in a good direction.</li>
+<li>Other weak places can be found via profilers. I use Valgrind, its dumps are easy to explore in kCachegrind. Profilers are embedded to many IDEs.</li>
+</ul>
+
+<p>These changes were enough to get this benchmark outcome:
+<details>
+<summary>Colored nonograms</summary></p>
+
+<pre><code class="language-Bash">izaron@izaron:~/nonograms/build$ ./nonograms_solver -x ../../nonogram/source2/ -e
+[2018-08-04 22:57:40.432] [Nonograms] [info] Starting a benchmark...
+[2018-08-04 22:58:03.820] [Nonograms] [info] Average time: 0.00497556, Median time: 0.00302781, Max time: 0.215925
+[2018-08-04 22:58:03.820] [Nonograms] [info] Top 10 heaviest nonograms:
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.215925 seconds, file 9596
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.164579 seconds, file 4462
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.105828 seconds, file 15831
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.08827 seconds, file 18353
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.0874717 seconds, file 10590
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.0831248 seconds, file 4649
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.0782811 seconds, file 11922
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.0734325 seconds, file 4655
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.071352 seconds, file 10828
+[2018-08-04 22:58:03.820] [Nonograms] [info] 0.0708263 seconds, file 11824
+</code></pre>
+
+<p></details></p>
+
+<p><details>
+<summary>Black-white nonograms</summary></p>
+
+<pre><code class="language-Bash">izaron@izaron:~/nonograms/build$ ./nonograms_solver -x ../../nonogram/source/ -e -b
+[2018-08-04 22:59:56.308] [Nonograms] [info] Starting a benchmark...
+[2018-08-04 23:00:09.781] [Nonograms] [info] Average time: 0.0095679, Median time: 0.00239274, Max time: 0.607341
+[2018-08-04 23:00:09.781] [Nonograms] [info] Top 10 heaviest nonograms:
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.607341 seconds, file 5126
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.458932 seconds, file 19510
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.452245 seconds, file 5114
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.19975 seconds, file 18627
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.163028 seconds, file 5876
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.161675 seconds, file 17403
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.153693 seconds, file 12771
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.146731 seconds, file 5178
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.142732 seconds, file 18244
+[2018-08-04 23:00:09.781] [Nonograms] [info] 0.136131 seconds, file 19385
+</code></pre>
+
+<p></details>
+Noticeable that black-white crosswords are &ldquo;harder&rdquo; than colored ones in average. It confirms observations of game lovers who also believe that &ldquo;colored&rdquo; puzzles are solved easily in average.</p>
+
+<p>In this way, without radical changes (like rewritting all the code on C or pieces of assembler code with a fastcall convention and omitting a frame pointer) it&rsquo;s possible to get high perfomance, notice, on a strongly weak computer. Optimizations may have the Pareto principle - a small optimization may drastically affect the program, because this piece of code is critical and is called very often.</p>
+
+<h4 id="further-optimizations">Further optimizations</h4>
+
+<p>Following methods can drastically improve the perfomance of a program. Some of them require special conditions and don&rsquo;t work in all cases.</p>
+
+<ul>
+<li>Rewritting the code to C-style and other 1972 stuff. Change ifstream to a C analog, vectors to arrays, learn all compiler options and struggle for each CPU&rsquo;s tick.</li>
+<li>Paralleling. For example, there is a piece in the code, where the rows and the columns are updated one by one:</li>
+</ul>
+
+<p><details>
+<summary>bool Puzzle::UpdateState(&hellip;)</summary></p>
+
+<pre><code class="language-cpp">    ...
+    if (!UpdateGroupsState(solver, dead_rows, row_groups, row_masks)) {                                                                               
+        return false;                                                              
+    }                                                                              
+    if (!UpdateGroupsState(solver, dead_cols, col_groups, col_masks)) {           
+        return false;                                                              
+    }                                                                             
+    return true;
+</code></pre>
+
+<p></details>
+These functions are independent one of each other and don&rsquo;t have mutual memory to access instead of <em>solver</em> variable (of type OneLineSolver), so it&rsquo;s possible to create two objects of OneLineSolver and start two threads in the function. The effect is - in colored crosswords &ldquo;the hardest&rdquo; is solved two times faster, in black-white the same is solved <sup>1</sup>&frasl;<sub>3</sub> faster, but the average time increased due to relatively expensiveness of creating threads.</p>
+
+<p>But really I&rsquo;d not suggest to do it right how is described here - firstly, creating threads is a expensive operation, it&rsquo;s not worth it to create threads for microseconds tasks, and secondly, using some combination of command line arguments in my program, these threads potentially can access some outer memory simultaneously, for example, when creating solution images - this should be taken into account and secured.</p>
+
+<p>If the tasks was serious and I had many input data and multi-core machines, I would go further - it&rsquo;s possible to create some permanent threads, and each will have its own OneLineSolver object, and there would be a thread-safe structure to rule distribution of work, which gives a reference to current row/column to solver. Threads after solving their tasks ask the structure for the next piece of work. Some puzzles may start to being solved before the last puzzle is solved to the end - while some threads upsolving the puzzle, the rest go forward. Paralleling could be done via graphics processor unit with CUDA - there is a plenty of variants.</p>
+
+<ul>
+<li>Using classical data structures. Notice - when I showed the pseudocode of the solution of colored nonograms, the functions <code>CanInsertColor</code> and <code>PlaceColor</code> don&rsquo;t work for $O(1)$, unlike black-white ones. In the program it looks as:</li>
+</ul>
+
+<p><details>
+<summary>CanPlaceColor and SetPlaceColor</summary></p>
+
+<pre><code class="language-cpp">bool OneLineSolver::CanPlaceColor(const vector&lt;int&gt;&amp; cells, int color,          
+        int lbound, int rbound) {                                               
+    // Went out of the border                                                   
+    if (rbound &gt;= cells.size()) {                                               
+        return false;                                                           
+    }                                                                           
+                                                                                
+    // We can paint a block of cells with a certain color if and only if it is  
+    // possible for all cells to have this color (that means, if every cell     
+    // from the block has color-th bit set to 1)                                                                                                       
+    int mask = 1 &lt;&lt; color;                                                                                                                             
+    for (int i = lbound; i &lt;= rbound; ++i) {                                    
+        if (!(cells[i] &amp; mask)) {                                               
+            return false;                                                       
+        }                                                                       
+    }                                                                           
+    return true;
+}
+
+void OneLineSolver::SetPlaceColor(int color, int lbound, int rbound) {                                                                                 
+    // Every cell from the block now can have this color                        
+    for (int i = lbound; i &lt;= rbound; ++i) {                                    
+        result_cells_[i] |= (1 &lt;&lt; color);                                       
+    }                                                                           
+} 
+</code></pre>
+
+<p></details>
+It work with linear complexity, for $O(N)$ (I&rsquo;ll explain this later)</p>
+
+<p>Let&rsquo;s look how to obtain better complexity. Take <code>CanPlaceColor</code>. This function checks that for each number in the segment $[lbound, rbound]$ the $color$-th bit is set to 1. As well we can take the $AND$ of <strong>all</strong> numbers of the segment and check the $color$-th bit. Using the fact that the $AND$ operation is <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> like sum, min/max, multiplication or the $XOR$ operation, to calculate the $AND$ of a segment quickly we can use any data structure which is good with commutative operations on segments. It includes:</p>
+
+<ol>
+<li><strong>SQRT-Decomposition</strong>. Precalc for $O(\sqrt{N})$, query for $O(\sqrt{N})$.</li>
+<li><strong>Segment Tree</strong>. Precalc for $O(N\log{N})$, query for $O(\log{N})$.</li>
+<li><strong>Sparse Table</strong>. Precalc for $O(N\log{N})$, query for $O(1)$.</li>
+</ol>
+
+<p>It&rsquo;s a pity that especially strong witchcrafts like the Farach-Colton and Bender algorithm (precalc for $O(N)$, query for $O(1)$) are useless for the task, because while learning the papers it turns out that the algorithm is created only for such operations $\varphi$, that $\varphi(\alpha, \beta) \in {\alpha, \beta}$, it means, the result of an operator should be one of the arguments.</p>
+
+<p>Now take <code>SetPlaceColor</code>. There it&rsquo;s needed to do an operation on segments of an array. It could be done via SQRT-Decomposition or Segment Tree with lazy propagation (aka &ldquo;with pushes&rdquo;). And for both of the functions simultaneously it&rsquo;s possible to use cool data structure - Implicit Treap with updating and querying for logarithm.</p>
+
+<p>Also we can expand the algorithm for black-white puzzles - use partial sums for all colors.</p>
+
+<p>So, we have a serious question - <em>why</em> don&rsquo;t we use all these gems of computer science, but do all the things for linear time? I have some answers:
+1.  Smaller complexity of calculating doesn&rsquo;t mean smaller amount of working time. An algorithm for $\log$ may require some precalculations, memory allocating, other shaking of resources - this algorithm can have pretty big constant (by &ldquo;constant&rdquo; I mean not a &ldquo;magic number&rdquo; in some neural networks, I mean the affect of the working time ). Obviously if we have $N=10^{5}$, then a conditional algo for $O(N^2)$ will work conditional 10 seconds, and a conditional algo of $O(N\log{N})$ for conditional 0.150 seconds, but things can change on small enough $N$-s. It becomes more complicated when complexities are similar and it&rsquo;s complex for one complexity to beat another complexity (it&rsquo;s a complex joke): $O(N\sqrt{N})$ versus $O(N\log^2{N})$. In our task $N$ (the length of the row/col) is very small - 15-30 in average.
+2.  There can be too small queries, enough to make precalculations for cool algorithms useless and resources-consuming for nought.</p>
+
+<p>That is, the explanation is simple - both of these items are in effect, and inserting these wonderworks of programmer thought instead of the stupid algo either optimize the program very slightly, or increase the time of work due to specificity of calcuations - very small $N$ and not so big amount of queries. The fact about quieries is approved by the profiler, which thinks that these functions take ~25% and ~11% of the entire time respectively, that is, pretty small for a potential program&rsquo;s weak spot. Even if we have a big complexity estimate, it&rsquo;s good to understand that in such types of tasks this is &ldquo;complexity from above&rdquo; (extreme input data which may not exist at all), but the real working time on a random puzzle is too way smaller.</p>
+
+<p>But don&rsquo;t forget about the data structures at all - they can become useful in other cases, so I included them in the optimization list. Let&rsquo;s look forward.</p>
+
+<ul>
+<li>Algorithm tuning. It may turn out that in average the algorithm works noticeably better if we change something unobvious. In our case it would be this approach: it&rsquo;s logical to predict that if we updated the state of a row successfully, then its updated cells are likely to &ldquo;trigger&rdquo; corresponding columns? It means, it may be better to update these columns as fast as possible, right after this row! So we have a queue of subtasks. I didn&rsquo;t try this algorithm, maybe it&rsquo;s really faster on our dataset.</li>
+<li>Sudden changes in technical requirements (now we have crosswords with 1337 colors or with dimension 1000x1000) also require optimizations. To handle big amount of colors it&rsquo;s okay to use fast <a href="https://en.cppreference.com/w/cpp/utility/bitset">std::bitset</a>, big dimensions are good with data structures described above, and so on.</li>
+</ul>
+
+<p>That&rsquo;s all, here some cool optimizations. &ldquo;Shoving&rdquo; an algorithm depending on technical requirements is fun and informative. You can learn some cool things like embedded implicit treap in C++ (it is <a href="https://en.wikipedia.org/wiki/Rope_(computer_science)">rope</a> from the &lt;ext\/rope&gt; header, but own writings work faster very often than the &ldquo;default&rdquo; one), <a href="http://codeforces.com/blog/entry/11080?locale=en">special embedded types of trees</a> and <a href="http://codeforces.com/topic/61081?locale=en">hidden hashtable</a> which works faster 3-6 times on inserting/removing and 4-10 times on writing/reading, than unordered_map. Not even saying about different non-standart things, for example, from Boost.</p>
+
+<h2 id="rofl-omitting-format-language">ROFL Omitting Format Language</h2>
+
+<p><img src="https://habrastorage.org/webt/rc/vp/jm/rcvpjmbinhow4aakwya-xgt3rm4.png" alt="" /></p>
+
+<p>Inspired by geniuses of bygone days and their thought products, in particular, by brand new archiving algorithms and operating system with not boring wallpapers (if you don&rsquo;t get it: these are well-known memes in the Russian IT community), I came up with brand new format of image files based on Japanese Puzzles and the Dunning–Kruger effect.</p>
+
+<p>ROFL is a recursive acronym like &ldquo;GNU&rsquo;s Not Unix&rdquo;. Well, the point of the format is to encode the image in the form of the Japanese puzzle, and an image editor should solve the puzzle to read the image. Hence the word &ldquo;Omitting&rdquo; in the name - the format omits the real image (btw, it can be useful in cryptography: you can pass Japanese crosswords with encoded passwords - all hackers will be going to be mad).
+Better if the format would look like <a href="https://matroska.org/technical/specs/index.html">Matroska</a> - at the start of the file we have 4 bytes [52][4F][46][4C], then the image dimensions and the count of colors in the next 3 bytes, then all the colors, each by 3 bytes, and then the description of each group - its length, amount of cells and colors.</p>
+
+<p>The format is free, MIT license, financial fees are volunteer - you can buy me a cup of coffee as for the author.</p>
+
+<h2 id="sources">Sources</h2>
+
+<p>Program sources are hosted on <a href="https://github.com/Izaron/Nonograms">GitHub</a>. The program has many argument flags, generation of crosswords from images, generation of images from crosswords (by the way, almost all images in the post was generated by the code). I used additional libraries <a href="https://github.com/ImageMagick/ImageMagick">Magick++</a> and <a href="https://github.com/Taywee/args">args</a>.</p>
+
+<p>I added a folder with some image <a href="https://github.com/Izaron/Nonograms/tree/master/puzzles">examples</a>, taken from the Internet (they are <em>not</em> part of the project). Parsed thousands of images from nonograms.org I didn&rsquo;t host anywhere (and will not do) to protect the author rights.</p>
+
+<p>I want to express special grattitude to the author of nonograms.org Chugunnyy K. A. (also known as KyberPrizrak) for the creation a wonderful, one of the biggest and the best site about nonograms, and for permission to use materials from the site for the post! All examples from the post I took from nonograms.org, here the <a href="https://gist.github.com/Izaron/518f6b8659d1385ce7047ae477881e8e">list</a> of source links.</p>
+
+<p><a href="https://github.com/Izaron/Nonograms">Sources</a>.</p>
+
+<p><img src="https://habrastorage.org/webt/es/zg/il/eszgil8btd-jjgaszlinfz2oodm.png" alt="" /></p>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"
+            integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1"
+                crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/contrib/auto-render.min.js"
+                integrity="sha256-ExtbCSBuYA7kq1Pz362ibde9nnsHYPt6JxuxYeZbU+c="
+                    crossorigin="anonymous"></script>
+        <script>
+        renderMathInElement(document.body,
+                            {
+                                                delimiters: [
+                                                                        {left: "\\\\begin{equation*}", right: "\\\\end{equation*}", display: true},
+                                                {left: "$$", right: "$$", display: true},
+                                                {left: "\\\[", right: "\\\]", display: true},
+                                                {left: "$", right: "$", display: false},
+                                                {left: "\\\(", right: "\\\)", display: false}
+                                            ]
+                                        }
+                                                );
+            </script>
+
+
+    <footer>
+      
+<script>
+(function() {
+  function center_el(tagName) {
+    var tags = document.getElementsByTagName(tagName), i, tag;
+    for (i = 0; i < tags.length; i++) {
+      tag = tags[i];
+      var parent = tag.parentElement;
+      
+      if (parent.childNodes.length === 1) {
+        
+        if (parent.nodeName === 'A') {
+          parent = parent.parentElement;
+          if (parent.childNodes.length != 1) continue;
+        }
+        if (parent.nodeName === 'P') parent.style.textAlign = 'center';
+      }
+    }
+  }
+  var tagNames = ['img', 'embed', 'object'];
+  for (var i = 0; i < tagNames.length; i++) {
+    center_el(tagNames[i]);
+  }
+})();
+</script>
+
+      
+      <hr/>
+      Made with ❤️ | <a href="https://github.com/izaron">Github</a>
+      
+    </footer>
+  </body>
+</html>
+
