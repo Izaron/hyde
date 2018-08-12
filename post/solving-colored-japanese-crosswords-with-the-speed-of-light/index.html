@@ -123,7 +123,7 @@
 
 <h4 id="brute-force">Brute force</h4>
 
-<p>Iterate all possible states for each cell and check the satisfability. Complexity of such a solution for black-white crosswords is $O(N<em>M</em>{2}^{N*M})$, for colored ones $O(N<em>M</em>{colors}^{N*M})$. Like <a href="https://en.wikipedia.org/wiki/Bogosort">clown sort</a>, this solution also can be named clownish. It&rsquo;s good for 5x5 dimension.</p>
+<p>Iterate all possible states for each cell and check the satisfability. Complexity of such a solution for black-white crosswords is $O(N\times M\times {2}^{N\times M})$, for colored ones $O(N\times M\times {colors}^{N\times M})$. Like <a href="https://en.wikipedia.org/wiki/Bogosort">clown sort</a>, this solution also can be named clownish. It&rsquo;s good for 5x5 dimension.</p>
 
 <h4 id="backtracking">Backtracking</h4>
 
@@ -146,7 +146,7 @@
 <li><em>International Olympiad in Informatics 2016</em> - <a href="http://ioinformatics.org/locations/ioi16/contest/day2/paint/paint-USA.pdf">legeng</a>, <a href="https://contest.yandex.ru/contest/2647/problems/D/">send solution (warning, Russian-language server)</a>. Time limit - 2 seconds, limit of the groups number - 100, the length of the line - 200&rsquo;000. These limitations are overkill, but a solution which passes the ACM task limits, gives <sup>80</sup>&frasl;<sub>100</sub> points in this task. The level of this contest is very hard, school students with cruel IQ from around the world train to solve bizarre tasks many years, then pass the competition to take part in this contest (only 4 people should pass to the contest from each country each year), solve it 2 rounds for 5 hours <del>and in case of epic win (bronze medal for 138-240 points of 600, in different years) land on Oxford, then get offers from you-know-what companies in the search department, have a long and happy life.</del></li>
 </ul>
 
-<p>A monochrome one-liner can be solved using different ways, as with $O(N*2^N)$ (brute-forcing all states, check for correctness, detect the cells which have the same colors in all correct states), as well somehow less stupid.</p>
+<p>A monochrome one-liner can be solved using different ways, as with $O(N\times 2^N)$ (brute-forcing all states, check for correctness, detect the cells which have the same colors in all correct states), as well somehow less stupid.</p>
 
 <p>The key idea is to use an analog of backtracking with avoiding redundant calculations. If we somehow placed some groups and currently we are in some cell, then we need to know, if it&rsquo;s possible to place remaining groups starting from the current cell.</p>
 
@@ -227,7 +227,7 @@ for i in range(1, n):
     array[i] += array[i - 1]
 </code></pre>
 
-<p>Thereby the algorithm works for $O(k*n)$ complexity, where $k$ is the number of black cell groups, $n$ is the length of the line. And we pass to the Semi-Final of ACM ICPC or get a bronze medal of IOI. <a href="https://github.com/Izaron/ACM-ICPC/blob/master/Timus%20Online%20Judge/Volume%206/1508.%20Japanese%20Puzzle.java">ACM solution (Java)</a>. <a href="https://github.com/Izaron/ACM-ICPC/blob/master/International%20Olympiad%20in%20Informatics/IOI%202016/paint.cpp">IOI solution (C++)</a>.</p>
+<p>Thereby the algorithm works for $O(k\times n)$ complexity, where $k$ is the number of black cell groups, $n$ is the length of the line. And we pass to the Semi-Final of ACM ICPC or get a bronze medal of IOI. <a href="https://github.com/Izaron/ACM-ICPC/blob/master/Timus%20Online%20Judge/Volume%206/1508.%20Japanese%20Puzzle.java">ACM solution (Java)</a>. <a href="https://github.com/Izaron/ACM-ICPC/blob/master/International%20Olympiad%20in%20Informatics/IOI%202016/paint.cpp">IOI solution (C++)</a>.</p>
 
 <h4 id="one-line-many-colors">One line, many colors</h4>
 
@@ -245,7 +245,7 @@ for i in range(1, n):
 According to the columns, this cell has either green, or white color.
 According to common sense, this cell definitely has only white color. And we continue to calculate the answer.</p>
 
-<p>If consider the 0-th bit &ldquo;white&rdquo;, the first &ldquo;blue&rdquo;, the second &ldquo;green&rdquo;, then the row calculated for the last cell state $011$, the column $101$. It means that really the cell has state $011&amp;101 = 001$.</p>
+<p>If consider the 0-th bit &ldquo;white&rdquo;, the first &ldquo;blue&rdquo;, the second &ldquo;green&rdquo;, then the row calculated for the last cell state $011$, the column $101$. It means that really the cell has state $011  AND  101=001$.</p>
 
 <p><details>
 <summary>Pseudocode</summary></p>
