@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Solving colored Japanese crosswords with the speed of light</title>
+    
+    <link href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAA6OjoAP///wCMjIwAWVlZAENDtQAgIOYAq6urACEhIQDCwsIAbW3eAAAAcAAjI4wA1tbWAAAAvQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwsLCwsLCwsLCwAAAAAACwUKDAUKDAUKDAULAAAACwUFCgwFCgwFCgwFCgsAAAsFBQoMBQoMBQoMBQoLAAALBQoMBQUKDAUFCgwKCwALBQgICAgFCggICAgIBQoLCwgEAwMDCAgEAwQEBAgICwgEBwgDAwMDAwgDAwMEBAgEAwcHCQkJAw0NDQ0IBwgEBAQDBwkICQEBAQENDQcDBAAEAwgJDQECAQEIAQ0NBAAAAAQDAwkBAQECAgENBAAAAAAABAQJCQ4OAgIEBAAAAAAAAAAAAA4GBg4EAAAAAAAAAAAAAAAOBgIOAAAAAAAAAAAAAAAAAA4OAAAAAAAAAOAHAADAAwAAgAEAAIABAACAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAAwAMAAOAHAAD8HwAA/D8AAP5/AAA=" rel="icon" type="image/x-icon" />
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/fonts.css" />
     <link rel="stylesheet" href="/css/theme-override.css">
@@ -86,7 +88,7 @@
 
 <p>In colored crosswords each group has its color - any color except white, which is reserved for background. Neighboring groups of <em>different</em> colors can be placed back to back, but for the <em>same</em> color the division by at least one white cell is still necessary.</p>
 
-<h2 id="what-is-not-a-japan-crossword">What is not a japan crossword</h2>
+<h2 id="what-is-not-a-japanese-crossword">What is not a Japanese crossword</h2>
 
 <p>Every pixel image can be encoded to a puzzle. But it may be impossible to restore the image back - the resulting puzzle may have more than one solution, either have the single solution but can&rsquo;t be solved in a logical way. Then the remaining cells are to be guessed used <s>quantum computing</s> shamanic technologies.</p>
 
@@ -98,7 +100,7 @@
 
 <p><em>A wrong nonogram - the solution is single, but impossible to be found with a deterministic algorithm. &ldquo;Unsolvable&rdquo; cells filled with orange. The source of the image is Wikipedia.</em></p>
 
-<p>This limitation is explained in such a way - in the most common case the japan crossword is an NP-complete problem. However, it isn&rsquo;t such a problem, if there is an algorithm which in every state uniquely calculates what cells are to be definitely guessed. All methods of solving crosswords, used by people (excepting <del>Monte-Carlo</del> trial and error method) are based on this.</p>
+<p>This limitation is explained in such a way - in the most common case the Japanese crossword is an NP-complete problem. However, it isn&rsquo;t such a problem, if there is an algorithm which in every state uniquely calculates what cells are to be definitely guessed. All methods of solving crosswords, used by people (excepting <del>Monte-Carlo</del> trial and error method) are based on this.</p>
 
 <p>The most orthodox crosswords have width and height what are divisible by 5, don&rsquo;t have instantly-calculated lines (what don&rsquo;t have groups at all or whose groups fill the entire line cell by cell definitely). These requirements are not mandatory.</p>
 

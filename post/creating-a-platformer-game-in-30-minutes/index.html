@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Creating a platformer game in 30 minutes</title>
+    
+    <link href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAA6OjoAP///wCMjIwAWVlZAENDtQAgIOYAq6urACEhIQDCwsIAbW3eAAAAcAAjI4wA1tbWAAAAvQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwsLCwsLCwsLCwAAAAAACwUKDAUKDAUKDAULAAAACwUFCgwFCgwFCgwFCgsAAAsFBQoMBQoMBQoMBQoLAAALBQoMBQUKDAUFCgwKCwALBQgICAgFCggICAgIBQoLCwgEAwMDCAgEAwQEBAgICwgEBwgDAwMDAwgDAwMEBAgEAwcHCQkJAw0NDQ0IBwgEBAQDBwkICQEBAQENDQcDBAAEAwgJDQECAQEIAQ0NBAAAAAQDAwkBAQECAgENBAAAAAAABAQJCQ4OAgIEBAAAAAAAAAAAAA4GBg4EAAAAAAAAAAAAAAAOBgIOAAAAAAAAAAAAAAAAAA4OAAAAAAAAAOAHAADAAwAAgAEAAIABAACAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAAwAMAAOAHAAD8HwAA/D8AAP5/AAA=" rel="icon" type="image/x-icon" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link rel="stylesheet" href="/css/theme-override.css">
+
+      <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css"
+         integrity="sha384-wITovz90syo1dJWVh32uuETPVEtGigN07tkttEqPv+uR2SE/mbQcG7ATL28aI9H0"
+         crossorigin="anonymous">
+    <header>
+
+  
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/dracula.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <nav>
+    <ul>
+      
+      
+      <li class="pull-left ">
+        <a href="/">/home/izaron</a>
+      </li>
+
+
+
+      
+      
+      <li class="pull-right">
+        <a href="/index.xml">~/subscribe</a>
+      </li>
+      
+
+    </ul>
+  </nav>
+</header>
+
+  </head>
+
+  <body>
+    <br/>
+
+<div class="article-meta">
+<h1><span class="title">Creating a platformer game in 30 minutes</span></h1>
+
+<h2 class="date">2013/10/28</h2>
+<p class="terms">
+  
+  
+  
+  
+  
+</p>
+</div>
+
+
+
+<main>
+<p><em>This post is the translation of my <a href="https://habr.com/post/199064/">blog bost from habr.com</a>. I used to spend a lot of time creating games (I loved platformers and pixelart especially) and learning how to code things, back to these days. I wrote seven blog posts in 2013-2014 describing something about games and mainly connected with C++, sometimes Lua, Java, Unity3D, based on my experience with this stuff.</em></p>
+
+<p><em>This post was the most successful of this period and had rating +80 (a notable good post as for habr.com). Of course, skipping years, I wish I did some things another way, since my code and stuff isn&rsquo;t good enough as it could be, but users liked it, and the post is of interest of myself, comparing what I was doing earlier and what I keep doing nowadays.</em></p>
+
+<p><em>The post is actual as for 2013 and contains some unavoidable cyrillic letters on screenshots. But it&rsquo;s not a problem, is it?</em></p>
+
+<p>Hello! Today we will bake a platformer game, using <strong>C++</strong>, <strong>Box2D</strong> and <strong>SFML</strong>, as well as an editor of 2D game maps - <strong>Tiled Map Editor</strong>.</p>
+
+<p><img src="https://habrastorage.org/getpro/habr/post_images/601/b21/f51/601b21f51d4be0d9d0f022c0d30a43ae.png" alt="image"/></p>
+
+<p>Here is the result (the map was created in 5 minutes + the game was working slow during the recording + the screen size isn&rsquo;t such stretched - it is a Bandicam defect): <a href="http://s3.hostingkartinok.com/uploads/images/2013/10/65774b5a0cc0887d293dd29f9eea7677.png">YouTube video</a>.</p>
+
+<p>Source codes and a .exe file - at the end of the article.</p>
+
+<p><h2>&ldquo;What, where, when?&rdquo;</h2>
+<h3>Box2D</h3>
+We will use this library to simulate physics in the platformer (colliding with blocks, gravitation). Maybe it was too much to use the library just for blocks, but let&rsquo;s have a fancy life.
+Why Box2D? Because it&rsquo;s the most popular and free physical library.</p>
+
+<p><h3>SFML</h3>
+Why SFML? I wanted to use SDL at first, but it&rsquo;s too limited in comparison to SFML, I&rsquo;d had to invent some wheels by myself. Just thanks to the author of SFML for saved time!
+We use it to draw graphics.</p>
+
+<p><h3>Tiled Map Editor</h3>
+What does Tiled Map Editor do here?
+Have you ever tried to create maps for games? I&rsquo;d bet your very first map looked as something like this.</p>
+
+<p><details>
+<summary>Spoiler</summary></p>
+
+<pre><code class="language-Bash">1111111
+1000001
+1001001
+1000011
+1000111
+1111111
+</code></pre>
+
+<p></details></p>
+
+<p>It&rsquo;s a pretty uneffective solution! It&rsquo;s better to write something like map editor, but we all understand that it is a term constrution and harder than creating such &ldquo;maps&rdquo; as above.</p>
+
+<p>Tiled Map Editor is one of such map editors. This is great and dope, and we can save every map created in the editor (consists of objects, tiles, its layers) in a XML-like .tmx file and then parse it via the special library in C++. Let&rsquo;s dive in.</p>
+
+<p><h2>Creating a map</h2>
+Download TME from the official <a href="http://www.mapeditor.org/">site</a>.
+Create new map &ldquo;File-&gt;Create&hellip;&rdquo;</p>
+
+<p><img src="https://habrastorage.org/getpro/habr/post_images/dab/377/6e7/dab3776e7a9c854bff8a878991fff56a.png" alt="image"/></p>
+
+<p>The orientation should be orthogonal (unless you make an isometric platformer), and the layer format XML, since we&rsquo;ll be reading this format.
+By the way, you can&rsquo;t change neither the layer format, nor the tile size in a created map.</p>
+
+<p><h3>Tiles</h3>
+Then we go to &ldquo;Map-&gt;New tileset&hellip;&rdquo;, load our tileset:</p>
+
+<p><img src="https://habrastorage.org/getpro/habr/post_images/3bf/459/069/3bf4590693648204410863d265811961.png" alt="image"/></p>
+
+<p>And now you must have something like this:</p>
+
+<p><img src="https://habrastorage.org/getpro/habr/post_images/e91/926/20c/e9192620c22ea1b81890d5b07beb7ba9.png" alt="image"/></p>
+
+<p>What is the matter of the tile layers?
+Almost every game has multi-layer maps. The first layer is earth (ice, grass, etc.), the second one are buildings (barracks, forts, city hall, etc., the background is transpared, by the way), the third one are trees (spruce, fir, etc., the background the same). That is, we draw the first layer firstly, then the second, and the third at last.</p>
+
+<p>The process of creating layers is imprinted on the next 3 screenshots:</p>
+
+<p><img src="https://habrastorage.org/getpro/habr/post_images/538/068/9c4/5380689c446222a47247643a8eb84ac9.png" alt="image"/>
+<img src="https://habrastorage.org/getpro/habr/post_images/434/709/919/4347099196bdc1027eac74c06c448146.png" alt="image"/>
+<img src="https://habrastorage.org/getpro/habr/post_images/9b5/6e1/24f/9b56e124fe8ec32ecb9b5eb12f1e8e3e.png" alt="image"/></p>
+
+<p>The list of the layers:</p>
+
+<p><img src="https://habrastorage.org/getpro/habr/post_images/dad/944/7cf/dad9447cfadacdc58f961053156fb844.png" alt="image"/></p>
+
+<p><h3>Objects</h3>
+What&rsquo;s an object in terms of TME?
+An object has its name, type and value properties.
+This panel is responsible for objects</p>
+
+<p><img src="https://habrastorage.org/getpro/habr/post_images/8e3/3ea/7a0/8e33ea7a0a01a43830698c18a4d30efe.png" alt="image"/></p>
+
+<p>You can learn the meaning of every button by yourself.
+Then let&rsquo;s try to create an object.
+Delete the layer named &ldquo;Колобоша&rdquo; (&ldquo;Kolobosha&rdquo;), create an <em>object</em> layer, you can use this name &ldquo;Колобоша&rdquo; again. Choose &ldquo;Insert tile object&rdquo; from the object panel (or you can choose a Shape to place), click on Kolobosha tile and place an object somewhere.
+Then click right mouse button on the object and then &ldquo;Object properties&hellip;&rdquo;. Change the object name to Kolobosha.</p>
+
+<p>Then save the map.</p>
+
+<p>In general, there are not hard points in map editors. It&rsquo;s time to parse the map.</p>
+
+<p><h2>Parsing maps</h2>
+There are a cool library to parse XML files - <a href="http://www.grinninglizard.com/tinyxml/">TinyXML</a>, load its sources.</p>
+
+<p>Create a Visual Studio project. Include TinyXML files (or just paste them to the project excluding xmltest.cpp).
+Then link includies and lib-files of SFML in &ldquo;Project-&gt;Properties&rdquo;. If you don&rsquo;t have a clue how to do this - welcome to Google.</p>
+
+<p>Create Level.h for maps.</p>
+
+<pre><code class="language-cpp">#ifndef LEVEL_H
+#define LEVEL_H
+
+#pragma comment(lib,&quot;Box2D.lib&quot;)
+#pragma comment(lib,&quot;sfml-graphics.lib&quot;)
+#pragma comment(lib,&quot;sfml-window.lib&quot;)
+#pragma comment(lib,&quot;sfml-system.lib&quot;)
+
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;SFML/Graphics.hpp&gt;
+</code></pre>
+
+<p>This is the beginning of the file.</p>
+
+<p>Further we define the object structure.</p>
+
+<pre><code class="language-cpp">struct Object
+{
+    int GetPropertyInt(std::string name);
+    float GetPropertyFloat(std::string name);
+    std::string GetPropertyString(std::string name);
+
+    std::string name;
+    std::string type;
+    sf::Rect&lt;int&gt; rect;
+    std::map&lt;std::string, std::string&gt; properties;
+
+	sf::Sprite sprite;
+};
+</code></pre>
+
+<p>Look at this.
+As I was saying, in TME every object may have properties. Properties are taken from a XML file, written to std::map, and then in can be obtained via the function GetProperty(&hellip;). <code>name</code> is the object name, <code>type</code> is its type, <code>rect</code> is the rectangle describing the object. At last, <code>sprite</code> is a sprite (an image) - is part of the tileset taken for the object. An object may don&rsquo;t have sprite.</p>
+
+<p>Then we have the layer structure which is a dead simple.</p>
+
+<pre><code class="language-cpp">struct Layer
+{
+    int opacity;
+    std::vector&lt;sf::Sprite&gt; tiles;
+};
+</code></pre>
+
+<p>The layer has opacity (yeah, we can do a semitransparent layer!) and the list of tiles.</p>
+
+<p>Then we have the level class:</p>
+
+<pre><code class="language-cpp">class Level
+{
+public:
+    bool LoadFromFile(std::string filename);
+    Object GetObject(std::string name);
+    std::vector&lt;Object&gt; GetObjects(std::string name);
+    void Draw(sf::RenderWindow &amp;window);
+	sf::Vector2i GetTileSize();
+
+private:
+    int width, height, tileWidth, tileHeight;
+    int firstTileID;
+    sf::Rect&lt;float&gt; drawingBounds;
+    sf::Texture tilesetImage;
+    std::vector&lt;Object&gt; objects;
+    std::vector&lt;Layer&gt; layers;
+};
+
+#endif
+</code></pre>
+
+<p><b>LoadFromFile</b> loads the map from a file. This is the main part of Level class.
+<b>GetObject</b> returns the first object with given name, <b>GetObjects</b> returns the list of objects with given name. Well, it shall have been done via using the type of needed object, but it was more convenient for me to catch stuff using its name, because in the editor an object&rsquo;s name is drawn above the object, but the type isn&rsquo;t.
+<b>Draw</b> draws all the tiles (not objects!) taking a reference to a RenderWindow.</p>
+
+<p>Then create Level.cpp:</p>
+
+<pre><code class="language-cpp">#include &quot;level.h&quot;
+
+#include &lt;iostream&gt;
+#include &quot;tinyxml.h&quot;
+</code></pre>
+
+<p>Work with object structure at first</p>
+
+<pre><code class="language-cpp">int Object::GetPropertyInt(std::string name)
+{
+    return atoi(properties[name].c_str());
+}
+
+float Object::GetPropertyFloat(std::string name)
+{
+    return strtod(properties[name].c_str(), NULL);
+}
+
+std::string Object::GetPropertyString(std::string name)
+{
+    return properties[name];
+}
+</code></pre>
+
+<p>Layer doesn&rsquo;t need realization, go to Level:</p>
+
+<p><details>
+<summary>bool Level::LoadFromFile(std::string filename)</summary></p>
+
+<pre><code class="language-cpp">bool Level::LoadFromFile(std::string filename)
+{
+    TiXmlDocument levelFile(filename.c_str());
+
+	// Load an XML-map
+    if(!levelFile.LoadFile())
+    {
+        std::cout &lt;&lt; &quot;Loading level \&quot;&quot; &lt;&lt; filename &lt;&lt; &quot;\&quot; failed.&quot; &lt;&lt; std::endl;
+        return false;
+    }
+
+    // Use map container
+    TiXmlElement *map;
+    map = levelFile.FirstChildElement(&quot;map&quot;);
+
+	// An example of the map: &lt;map version=&quot;1.0&quot; orientation=&quot;orthogonal&quot;
+	// width=&quot;10&quot; height=&quot;10&quot; tilewidth=&quot;34&quot; tileheight=&quot;34&quot;&gt;
+    width = atoi(map-&gt;Attribute(&quot;width&quot;));
+    height = atoi(map-&gt;Attribute(&quot;height&quot;));
+    tileWidth = atoi(map-&gt;Attribute(&quot;tilewidth&quot;));
+    tileHeight = atoi(map-&gt;Attribute(&quot;tileheight&quot;));
+
+    // Take the tileset description and the id of the first tile
+    TiXmlElement *tilesetElement;
+    tilesetElement = map-&gt;FirstChildElement(&quot;tileset&quot;);
+    firstTileID = atoi(tilesetElement-&gt;Attribute(&quot;firstgid&quot;));
+
+	// source is the path to the image
+    TiXmlElement *image;
+    image = tilesetElement-&gt;FirstChildElement(&quot;image&quot;);
+    std::string imagepath = image-&gt;Attribute(&quot;source&quot;);
+
+    // Try to load the tileset
+	sf::Image img;
+
+    if(!img.loadFromFile(imagepath))
+    {
+        std::cout &lt;&lt; &quot;Failed to load tile sheet.&quot; &lt;&lt; std::endl;
+        return false;
+    }
+
+    // Clear the color (109, 159, 185) out of the map
+    // In general, the tileset can have any color as background, but I didn't find a solution
+    // to parse a hex string like &quot;6d9fb9&quot; to the color
+    img.createMaskFromColor(sf::Color(109, 159, 185));
+    // Load the texture from the image
+	tilesetImage.loadFromImage(img);
+    // Smooth is prohibited
+    tilesetImage.setSmooth(false);
+
+    // Get the amount of tileset rows and columns
+	int columns = tilesetImage.getSize().x / tileWidth;
+    int rows = tilesetImage.getSize().y / tileHeight;
+
+    // A vector consists of image rectangles (TextureRect)
+    std::vector&lt;sf::Rect&lt;int&gt;&gt; subRects;
+
+	for(int y = 0; y &lt; rows; y++)
+	for(int x = 0; x &lt; columns; x++)
+	{
+		sf::Rect&lt;int&gt; rect;
+
+		rect.top = y * tileHeight;
+		rect.height = tileHeight;
+		rect.left = x * tileWidth;
+		rect.width = tileWidth;
+
+		subRects.push_back(rect);
+	}
+
+    // Working with layers
+    TiXmlElement *layerElement;
+    layerElement = map-&gt;FirstChildElement(&quot;layer&quot;);
+    while(layerElement)
+    {
+        Layer layer;
+		
+        // If we have the opacity property, then set the opacity, otherwise it won't be semitransparent
+        if (layerElement-&gt;Attribute(&quot;opacity&quot;) != NULL)
+        {
+            float opacity = strtod(layerElement-&gt;Attribute(&quot;opacity&quot;), NULL);
+            layer.opacity = 255 * opacity;
+        }
+        else
+        {
+            layer.opacity = 255;
+        }
+
+        // &lt;data&gt; container
+        TiXmlElement *layerDataElement;
+        layerDataElement = layerElement-&gt;FirstChildElement(&quot;data&quot;);
+
+        if(layerDataElement == NULL)
+        {
+            std::cout &lt;&lt; &quot;Bad map. No layer information found.&quot; &lt;&lt; std::endl;
+        }
+
+		// &lt;tile&gt; container - description of tiles of each layer
+        TiXmlElement *tileElement;
+        tileElement = layerDataElement-&gt;FirstChildElement(&quot;tile&quot;);
+
+        if(tileElement == NULL)
+        {
+            std::cout &lt;&lt; &quot;Bad map. No tile information found.&quot; &lt;&lt; std::endl;
+            return false;
+        }
+
+        int x = 0;
+        int y = 0;
+
+        while(tileElement)
+        {
+            int tileGID = atoi(tileElement-&gt;Attribute(&quot;gid&quot;));
+            int subRectToUse = tileGID - firstTileID;
+
+            // Set the TextureRect of each tile
+            if (subRectToUse &gt;= 0)
+            {
+                sf::Sprite sprite;
+                sprite.setTexture(tilesetImage);
+				sprite.setTextureRect(subRects[subRectToUse]);
+                sprite.setPosition(x * tileWidth, y * tileHeight);
+                sprite.setColor(sf::Color(255, 255, 255, layer.opacity));
+
+                layer.tiles.push_back(sprite);
+            }
+
+            tileElement = tileElement-&gt;NextSiblingElement(&quot;tile&quot;);
+
+            x++;
+            if (x &gt;= width)
+            {
+                x = 0;
+                y++;
+                if(y &gt;= height)
+                    y = 0;
+            }
+        }
+
+        layers.push_back(layer);
+
+        layerElement = layerElement-&gt;NextSiblingElement(&quot;layer&quot;);
+    }
+
+    // Working wih objects
+    TiXmlElement *objectGroupElement;
+
+    // If we have object layers
+    if (map-&gt;FirstChildElement(&quot;objectgroup&quot;) != NULL)
+    {
+        objectGroupElement = map-&gt;FirstChildElement(&quot;objectgroup&quot;);
+        while (objectGroupElement)
+        {
+			// &lt;object&gt; container
+            TiXmlElement *objectElement;
+            objectElement = objectGroupElement-&gt;FirstChildElement(&quot;object&quot;);
+           
+			while(objectElement)
+            {
+                // Get all data - type, name, position, etc.
+                std::string objectType;
+                if (objectElement-&gt;Attribute(&quot;type&quot;) != NULL)
+                {
+                    objectType = objectElement-&gt;Attribute(&quot;type&quot;);
+                }
+                std::string objectName;
+                if (objectElement-&gt;Attribute(&quot;name&quot;) != NULL)
+                {
+                    objectName = objectElement-&gt;Attribute(&quot;name&quot;);
+                }
+                int x = atoi(objectElement-&gt;Attribute(&quot;x&quot;));
+                int y = atoi(objectElement-&gt;Attribute(&quot;y&quot;));
+
+				int width, height;
+
+				sf::Sprite sprite;
+                sprite.setTexture(tilesetImage);
+				sprite.setTextureRect(sf::Rect&lt;int&gt;(0,0,0,0));
+                sprite.setPosition(x, y);
+
+				if (objectElement-&gt;Attribute(&quot;width&quot;) != NULL)
+				{
+					width = atoi(objectElement-&gt;Attribute(&quot;width&quot;));
+					height = atoi(objectElement-&gt;Attribute(&quot;height&quot;));
+				}
+				else
+				{
+					width = subRects[atoi(objectElement-&gt;Attribute(&quot;gid&quot;)) - firstTileID].width;
+					height = subRects[atoi(objectElement-&gt;Attribute(&quot;gid&quot;)) - firstTileID].height;
+					sprite.setTextureRect(subRects[atoi(objectElement-&gt;Attribute(&quot;gid&quot;)) - firstTileID]);
+				}
+
+                // Create object structure
+                Object object;
+                object.name = objectName;
+                object.type = objectType;
+				object.sprite = sprite;
+
+                sf::Rect &lt;int&gt; objectRect;
+                objectRect.top = y;
+                objectRect.left = x;
+				objectRect.height = height;
+				objectRect.width = width;
+                object.rect = objectRect;
+
+                // Properties of the object
+                TiXmlElement *properties;
+                properties = objectElement-&gt;FirstChildElement(&quot;properties&quot;);
+                if (properties != NULL)
+                {
+                    TiXmlElement *prop;
+                    prop = properties-&gt;FirstChildElement(&quot;property&quot;);
+                    if (prop != NULL)
+                    {
+                        while(prop)
+                        {
+                            std::string propertyName = prop-&gt;Attribute(&quot;name&quot;);
+                            std::string propertyValue = prop-&gt;Attribute(&quot;value&quot;);
+
+                            object.properties[propertyName] = propertyValue;
+
+                            prop = prop-&gt;NextSiblingElement(&quot;property&quot;);
+                        }
+                    }
+                }
+
+                // Pass the object to the vector
+                objects.push_back(object);
+
+                objectElement = objectElement-&gt;NextSiblingElement(&quot;object&quot;);
+            }
+            objectGroupElement = objectGroupElement-&gt;NextSiblingElement(&quot;objectgroup&quot;);
+        }
+    }
+    else
+    {
+        std::cout &lt;&lt; &quot;No object layers found...&quot; &lt;&lt; std::endl;
+    }
+
+    return true;
+}
+</code></pre>
+
+<p></details></p>
+
+<p>The rest of Level functions:</p>
+
+<pre><code class="language-cpp">Object Level::GetObject(std::string name)
+{
+    // Only the first object with given name
+    for (int i = 0; i &lt; objects.size(); i++)
+        if (objects[i].name == name)
+            return objects[i];
+}
+
+std::vector&lt;Object&gt; Level::GetObjects(std::string name)
+{
+    // All objects with given name
+	std::vector&lt;Object&gt; vec;
+    for(int i = 0; i &lt; objects.size(); i++)
+        if(objects[i].name == name)
+			vec.push_back(objects[i]);
+
+	return vec;
+}
+
+sf::Vector2i Level::GetTileSize()
+{
+	return sf::Vector2i(tileWidth, tileHeight);
+}
+
+void Level::Draw(sf::RenderWindow &amp;window)
+{
+    // Draw all the tiles (DON'T draw the objects!)
+	for(int layer = 0; layer &lt; layers.size(); layer++)
+		for(int tile = 0; tile &lt; layers[layer].tiles.size(); tile++)
+			window.draw(layers[layer].tiles[tile]);
+}
+</code></pre>
+
+<p>We&rsquo;re done with Level.h!</p>
+
+<p>Let&rsquo;s test it.
+Create main.cpp and write:</p>
+
+<pre><code class="language-cpp">#include &quot;level.h&quot;
+
+int main()
+{
+	Level level;
+	level.LoadFromFile(&quot;test.tmx&quot;);
+
+	sf::RenderWindow window;
+	window.create(sf::VideoMode(800, 600), &quot;Level.h test&quot;);
+
+    while(window.isOpen())
+    {
+        sf::Event event;
+
+        while(window.pollEvent(event))
+        {
+            if(event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear();
+		level.Draw(window);
+        window.display();
+    }
+
+    return 0;
+}
+</code></pre>
+
+<p>The map can look as you want!</p>
+
+<p>You can play with objects:</p>
+
+<p><img src="http://s6.hostingkartinok.com/uploads/images/2013/10/e99cc289b5fb814eb7c509ed69cef81c.png" alt="image"/></p>
+
+<p>main.cpp</p>
+
+<pre><code class="language-cpp">#include &quot;level.h&quot;
+#include &lt;iostream&gt;
+
+int main()
+{
+	Level level;
+	level.LoadFromFile(&quot;test.tmx&quot;);
+
+	Object kolobosha = level.GetObject(&quot;Kolobosha&quot;);
+	std::cout &lt;&lt; kolobosha.name &lt;&lt; std::endl;
+	std::cout &lt;&lt; kolobosha.type &lt;&lt; std::endl;
+	std::cout &lt;&lt; kolobosha.GetPropertyInt(&quot;health&quot;) &lt;&lt; std::endl;
+	std::cout &lt;&lt; kolobosha.GetPropertyString(&quot;mood&quot;) &lt;&lt; std::endl;
+
+	sf::RenderWindow window;
+	window.create(sf::VideoMode(800, 600), &quot;Kolobosha adventures&quot;);
+
+    while(window.isOpen())
+    {
+        sf::Event event;
+
+        while(window.pollEvent(event))
+        {
+            if(event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear();
+		level.Draw(window);
+        window.display();
+    }
+
+    return 0;
+}
+</code></pre>
+
+<p>Results:</p>
+
+<p><img src="http://s3.hostingkartinok.com/uploads/images/2013/10/65774b5a0cc0887d293dd29f9eea7677.png" alt="image"/></p>
+
+<p>Then you&rsquo;re done with objects, it&rsquo;s time for Box2D:</p>
+
+<p><h2>Falling boxes</h2>
+We want to create a <s>3D-action</s> platformer game.
+There are objects on the map, namely player, enemy, block, or coins.
+We initialize the player, force him to do some commands via keyboard and have physics laws.
+Enemies walk here and there, push away the player if he&rsquo;s too close and die if the player jumped on them.
+Blocks are fixed &ldquo;in space&rdquo; as static objects, the player can jump on them.
+Coins give nothing, just disapper when collided with the player.</p>
+
+<p>Open main.cpp, erase all the code we wrote earlier, and write this:</p>
+
+<pre><code class="language-cpp">#include &quot;level.h&quot;
+#include &lt;Box2D\Box2D.h&gt;
+
+#include &lt;iostream&gt;
+#include &lt;random&gt;
+
+Object player;
+b2Body* playerBody;
+
+std::vector&lt;Object&gt; coin;
+std::vector&lt;b2Body*&gt; coinBody;
+
+std::vector&lt;Object&gt; enemy;
+std::vector&lt;b2Body*&gt; enemyBody;
+</code></pre>
+
+<p>Here we include level.h and Box2D.h. iostream is needed to output data to the console, random to generate the direction of enemy movement.
+Then we have the player and vectors - each enemy, coin and the player have own Object and b2Body (a body in terms of Box2D).</p>
+
+<p>Warning - blocks have no body, because they&rsquo;re active in the game only as physical objects, and don&rsquo;t take part in the game logic.</p>
+
+<p>Further:</p>
+
+<pre><code class="language-cpp">int main()
+{
+	srand(time(NULL));
+
+	Level lvl;
+	lvl.LoadFromFile(&quot;platformer.tmx&quot;);
+
+
+    b2Vec2 gravity(0.0f, 1.0f);
+    b2World world(gravity);
+
+	sf::Vector2i tileSize = lvl.GetTileSize();
+</code></pre>
+
+<p>srand(time(NULL)) is needed for random.</p>
+
+<p>Load the map, create b2World, passing gravity to this. Also, the gravity may have another direction, and direction from (0, 10) is stronger than (0, 1). Then we take the needed tile size.</p>
+
+<p>Then we create block bodies:</p>
+
+<pre><code class="language-cpp">	std::vector&lt;Object&gt; block = lvl.GetObjects(&quot;block&quot;);
+	for(int i = 0; i &lt; block.size(); i++)
+	{
+		b2BodyDef bodyDef;
+		bodyDef.type = b2_staticBody;
+		bodyDef.position.Set(block[i].rect.left + tileSize.x / 2 * (block[i].rect.width / tileSize.x - 1),
+			block[i].rect.top + tileSize.y / 2 * (block[i].rect.height / tileSize.y - 1));
+		b2Body* body = world.CreateBody(&amp;bodyDef);
+		b2PolygonShape shape;
+		shape.SetAsBox(block[i].rect.width / 2, block[i].rect.height / 2);
+		body-&gt;CreateFixture(&amp;shape,1.0f);
+	}
+</code></pre>
+
+<pre><code class="language-cpp">bodyDef.type = b2_staticBody;
+</code></pre>
+
+<p>Blocks are static, they have no weight and fixed in space:</p>
+
+<pre><code class="language-cpp">bodyDef.position.Set(block[i].rect.left + tileSize.x / 2 * (block[i].rect.width / tileSize.x - 1),
+			block[i].rect.top + tileSize.y / 2 * (block[i].rect.height / tileSize.y - 1));
+</code></pre>
+
+<p>Here we set block positions. If we set the same position as the object has, we will have a cruel <a href="http://www.gamedev.ru/code/forum/?id=182066">error</a>.</p>
+
+<pre><code class="language-cpp">b2Body* body = world.CreateBody(&amp;bodyDef);
+</code></pre>
+
+<p>Create the block body in <code>world</code>. We don&rsquo;t have any work with the body later (and don&rsquo;t save it anywhere).</p>
+
+<pre><code class="language-cpp">b2PolygonShape shape;
+		shape.SetAsBox(block[i].rect.width / 2, block[i].rect.height / 2);
+</code></pre>
+
+<p>Each body has some shapes. I won&rsquo;t go deep to this theme, because the blocks (and other bodies) are happy with a single rectangle.</p>
+
+<pre><code class="language-cpp">body-&gt;CreateFixture(&amp;shape,1.0f);
+</code></pre>
+
+<p>Link the shape with the body.</p>
+
+<p>Then we do the same with enemies, coins and the player, with slight differencies:</p>
+
+<pre><code class="language-cpp">	coin = lvl.GetObjects(&quot;coin&quot;);
+	for(int i = 0; i &lt; coin.size(); i++)
+	{
+		b2BodyDef bodyDef;
+		bodyDef.type = b2_dynamicBody;
+		bodyDef.position.Set(coin[i].rect.left + tileSize.x / 2 * (coin[i].rect.width / tileSize.x - 1),
+			coin[i].rect.top + tileSize.y / 2 * (coin[i].rect.height / tileSize.y - 1));
+		bodyDef.fixedRotation = true;
+		b2Body* body = world.CreateBody(&amp;bodyDef);
+		b2PolygonShape shape;
+		shape.SetAsBox(coin[i].rect.width / 2, coin[i].rect.height / 2);
+		body-&gt;CreateFixture(&amp;shape,1.0f);
+		coinBody.push_back(body);
+	}
+
+	enemy = lvl.GetObjects(&quot;enemy&quot;);
+	for(int i = 0; i &lt; enemy.size(); i++)
+	{
+		b2BodyDef bodyDef;
+		bodyDef.type = b2_dynamicBody;
+		bodyDef.position.Set(enemy[i].rect.left +
+			tileSize.x / 2 * (enemy[i].rect.width / tileSize.x - 1),
+			enemy[i].rect.top + tileSize.y / 2 * (enemy[i].rect.height / tileSize.y - 1));
+		bodyDef.fixedRotation = true;
+		b2Body* body = world.CreateBody(&amp;bodyDef);
+		b2PolygonShape shape;
+		shape.SetAsBox(enemy[i].rect.width / 2, enemy[i].rect.height / 2);
+		body-&gt;CreateFixture(&amp;shape,1.0f);
+		enemyBody.push_back(body);
+	}
+
+
+	player = lvl.GetObject(&quot;player&quot;);
+	b2BodyDef bodyDef;
+	bodyDef.type = b2_dynamicBody;
+	bodyDef.position.Set(player.rect.left, player.rect.top);
+	bodyDef.fixedRotation = true;
+	playerBody = world.CreateBody(&amp;bodyDef);
+	b2PolygonShape shape; shape.SetAsBox(player.rect.width / 2, player.rect.height / 2);
+	b2FixtureDef fixtureDef;
+	fixtureDef.shape = &amp;shape;
+	fixtureDef.density = 1.0f; fixtureDef.friction = 0.3f;
+	playerBody-&gt;CreateFixture(&amp;fixtureDef);
+</code></pre>
+
+<pre><code class="language-cpp">bodyDef.fixedRotation = true;
+</code></pre>
+
+<p>This means that the body can&rsquo;t rotate.</p>
+
+<p>All bodies done, it&rsquo;s time to initialize graphics!</p>
+
+<pre><code class="language-cpp">	sf::Vector2i screenSize(800, 600);
+
+	sf::RenderWindow window;
+	window.create(sf::VideoMode(screenSize.x, screenSize.y), &quot;Game&quot;);
+</code></pre>
+
+<p>Obvious code, creates a window with certain size and title.</p>
+
+<pre><code class="language-cpp">	sf::View view;
+	view.reset(sf::FloatRect(0.0f, 0.0f, screenSize.x, screenSize.y));
+	view.setViewport(sf::FloatRect(0.0f, 0.0f, 2.0f, 2.0f));
+</code></pre>
+
+<p>Here we create a View for the window.</p>
+
+<p>Why do we need this? To have a game in pixel art style, we multiply the screen size by 2 with using sf::View and all images are drawn with 2 times wider width and height.</p>
+
+<pre><code class="language-cpp">    while(window.isOpen())
+    {
+        sf::Event evt;
+
+        while(window.pollEvent(evt))
+        {
+			switch(evt.type)
+			{
+			case sf::Event::Closed:
+                window.close();
+				break;
+</code></pre>
+
+<p>The window closes by pressing the red cross. We had the same code earlier.</p>
+
+<pre><code class="language-cpp">			case sf::Event::KeyPressed:
+				if(evt.key.code == sf::Keyboard::W)
+					playerBody-&gt;SetLinearVelocity(b2Vec2(0.0f, -15.0f));
+
+				if(evt.key.code == sf::Keyboard::D)
+					playerBody-&gt;SetLinearVelocity(b2Vec2(5.0f, 0.0f));
+
+				if(evt.key.code == sf::Keyboard::A)
+					playerBody-&gt;SetLinearVelocity(b2Vec2(-5.0f, 0.0f));
+				break;
+</code></pre>
+
+<p>This is more interesting. We add speed to the player by pressing WAD keys.</p>
+
+<pre><code class="language-cpp">world.Step(1.0f / 60.0f, 1, 1);
+</code></pre>
+
+<p>We update the Box2D world here. The first argument takes the frequency of updating (every <sup>1</sup>&frasl;<sub>60</sub> seconds), and the numbers of velocityIterations and positionIterations. The higher the last two values, the more realistic physics the game has. Since we don&rsquo;t have any hard shapes like in Angry Birds, only rectangles, we&rsquo;re okay with a single iteration.</p>
+
+<p><source lang="cs">
+        for(b2ContactEdge* ce = playerBody-&gt;GetContactList(); ce; ce = ce-&gt;next)
+        {
+            b2Contact* c = ce-&gt;contact;</p>
+
+<pre><code>
+Here we work with collisions between the player and other bodies.
+
+```cpp
+			for(int i = 0; i &lt; coinBody.size(); i++)
+				if(c-&gt;GetFixtureA() == coinBody[i]-&gt;GetFixtureList())
+				{
+					coinBody[i]-&gt;DestroyFixture(coinBody[i]-&gt;GetFixtureList());
+					coin.erase(coin.begin() + i);
+					coinBody.erase(coinBody.begin() + i);
+				}
+</code></pre>
+
+<p>Collisions with coins.
+If a money collided with the player, it just removed from the vectors.</p>
+
+<pre><code class="language-cpp">			for(int i = 0; i &lt; enemyBody.size(); i++)
+				if(c-&gt;GetFixtureA() == enemyBody[i]-&gt;GetFixtureList())
+				{
+					if(playerBody-&gt;GetPosition().y &lt; enemyBody[i]-&gt;GetPosition().y)
+					{
+						playerBody-&gt;SetLinearVelocity(b2Vec2(0.0f, -10.0f));
+
+						enemyBody[i]-&gt;DestroyFixture(enemyBody[i]-&gt;GetFixtureList());
+						enemy.erase(enemy.begin() + i);
+						enemyBody.erase(enemyBody.begin() + i);
+					}
+</code></pre>
+
+<p>If an enemy collided with the player, we check if the player above the enemy or not. If yes, then the enemy removes, and the player springs up.</p>
+
+<p>Otherwise, the player pushed away from the enemy.</p>
+
+<pre><code class="language-cpp">					else
+					{
+						int tmp = (playerBody-&gt;GetPosition().x &lt; enemyBody[i]-&gt;GetPosition().x)
+							? -1 : 1;
+						playerBody-&gt;SetLinearVelocity(b2Vec2(10.0f * tmp, 0.0f));
+					}
+				}
+		}
+</code></pre>
+
+<p>The player moves either to the left or to the right depending on his current position relatively to the enemy.</p>
+
+<pre><code class="language-cpp">		for(int i = 0; i &lt; enemyBody.size(); i++)
+		{
+			if(enemyBody[i]-&gt;GetLinearVelocity() == b2Vec2_zero)
+			{
+				int tmp = (rand() % 2 == 1) ? 1 : -1;
+				enemyBody[i]-&gt;SetLinearVelocity(b2Vec2(5.0f * tmp, 0.0f));
+			}
+		}
+</code></pre>
+
+<p>If the speed of an enemy is equal to 0, then we give him more speed - he goes either to the right, or to the left. It is a throw-like movement.</p>
+
+<pre><code class="language-cpp">		b2Vec2 pos = playerBody-&gt;GetPosition();
+		view.setCenter(pos.x + screenSize.x / 4, pos.y + screenSize.y / 4);
+		window.setView(view);
+</code></pre>
+
+<p>Work with graphics. Get the player position, change the view center and use our view.</p>
+
+<pre><code class="language-cpp">		player.sprite.setPosition(pos.x, pos.y);
+
+		for(int i = 0; i &lt; coin.size(); i++)
+			coin[i].sprite.setPosition(coinBody[i]-&gt;GetPosition().x, coinBody[i]-&gt;GetPosition().y);
+
+		for(int i = 0; i &lt; enemy.size(); i++)
+			enemy[i].sprite.setPosition(enemyBody[i]-&gt;GetPosition().x, enemyBody[i]-&gt;GetPosition().y);
+</code></pre>
+
+<p>Set b2Body positions to the sprites (for the player, coins and enemies).</p>
+
+<pre><code class="language-cpp">        window.clear();
+
+		lvl.Draw(window);
+
+		window.draw(player.sprite);
+
+		for(int i = 0; i &lt; coin.size(); i++)
+			window.draw(coin[i].sprite);
+
+		for(int i = 0; i &lt; enemy.size(); i++)
+			window.draw(enemy[i].sprite);
+
+		window.display();
+</code></pre>
+
+<p>Clear the window, draw here tiles of the map, then the player, coins and enemies, and then display the window.</p>
+
+<pre><code class="language-cpp">    }
+
+    return 0;
+}
+</code></pre>
+
+<p>It&rsquo;s done!</p>
+
+<p>An example map:</p>
+
+<p><img src="http://s6.hostingkartinok.com/uploads/images/2013/10/a348a0abc8945f94fa4cb205342b074e.png" alt="image"/></p>
+
+<p><h2>Sources</h2>
+<img src="http://static.pmmlabs.ru/images/github-logo.png" alt="image"/></p>
+
+<p><a href="https://github.com/Izaron/Platformer">https://github.com/Izaron/Platformer</a></p>
+
+<p><h2>Thanks</h2>
+&hellip; to the authors of this <a href="http://en.sfml-dev.org/forums/index.php?topic=3023.0">topic</a>.</p>
+
+<p>&hellip; to the authors of Box2D</p>
+
+<p>&hellip; to the authors of <a href="http://www.grinninglizard.com/tinyxml/">TinyXml</a></p>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.js"
+            integrity="sha384-/y1Nn9+QQAipbNQWU65krzJralCnuOasHncUFXGkdwntGeSvQicrYkiUBwsgUqc1"
+                crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/contrib/auto-render.min.js"
+                integrity="sha256-ExtbCSBuYA7kq1Pz362ibde9nnsHYPt6JxuxYeZbU+c="
+                    crossorigin="anonymous"></script>
+        <script>
+        renderMathInElement(document.body,
+                            {
+                                                delimiters: [
+                                                                        {left: "\\\\begin{equation*}", right: "\\\\end{equation*}", display: true},
+                                                {left: "$$", right: "$$", display: true},
+                                                {left: "\\\[", right: "\\\]", display: true},
+                                                {left: "$", right: "$", display: false},
+                                                {left: "\\\(", right: "\\\)", display: false}
+                                            ]
+                                        }
+                                                );
+            </script>
+
+
+    <footer>
+      
+<script>
+(function() {
+  function center_el(tagName) {
+    var tags = document.getElementsByTagName(tagName), i, tag;
+    for (i = 0; i < tags.length; i++) {
+      tag = tags[i];
+      var parent = tag.parentElement;
+      
+      if (parent.childNodes.length === 1) {
+        
+        if (parent.nodeName === 'A') {
+          parent = parent.parentElement;
+          if (parent.childNodes.length != 1) continue;
+        }
+        if (parent.nodeName === 'P') parent.style.textAlign = 'center';
+      }
+    }
+  }
+  var tagNames = ['img', 'embed', 'object'];
+  for (var i = 0; i < tagNames.length; i++) {
+    center_el(tagNames[i]);
+  }
+})();
+</script>
+
+      
+      <hr/>
+      Made with ❤️ | <a href="https://github.com/izaron">Github</a>
+      
+    </footer>
+  </body>
+</html>
+

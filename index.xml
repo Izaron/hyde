@@ -33,5 +33,15 @@ I&amp;rsquo;ve been doing competitive programming for some years, and have never
  Competitive programming is interesting If someone does CP seriously, he learns a lot of interesting things.</description>
     </item>
     
+    <item>
+      <title>Creating a platformer game in 30 minutes</title>
+      <link>/post/creating-a-platformer-game-in-30-minutes/</link>
+      <pubDate>Mon, 28 Oct 2013 00:00:00 +0000</pubDate>
+      
+      <guid>/post/creating-a-platformer-game-in-30-minutes/</guid>
+      <description>This post is the translation of my blog bost from habr.com. I used to spend a lot of time creating games (I loved platformers and pixelart especially) and learning how to code things, back to these days. I wrote seven blog posts in 2013-2014 describing something about games and mainly connected with C++, sometimes Lua, Java, Unity3D, based on my experience with this stuff.
+This post was the most successful of this period and had rating +80 (a notable good post as for habr.</description>
+    </item>
+    
   </channel>
 </rss>
